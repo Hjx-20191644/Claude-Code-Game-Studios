@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/weapon_data.gd" id="1_weapon"]
+
+[resource]
+script = ExtResource("1_weapon")
+weapon_name = "手枪"
+weapon_type = "ranged"
+base_damage = 15
+attack_cooldown = 0.3
+melee_angle = 0.0
+melee_radius = 0.0
+bullet_speed = 600.0
+max_range = 400.0
+scatter_degrees = 5.0
+max_ammo = 10

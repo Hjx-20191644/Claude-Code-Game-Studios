@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/upgrade_data.gd" id="1_up"]
+
+[resource]
+script = ExtResource("1_up")
+id = "ranged_damage_up"
+display_name = "穿透弹头"
+description = "远程伤害 +20%"
+rarity = 0
+tags = Array[String](["ranged", "offense"])
+max_stacks = 5
+target_stat = "ranged_damage_bonus"
+modifier_type = 1
+value = 0.2

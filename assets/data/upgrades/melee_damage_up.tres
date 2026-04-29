@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/upgrade_data.gd" id="1_up"]
+
+[resource]
+script = ExtResource("1_up")
+id = "melee_damage_up"
+display_name = "利刃强化"
+description = "近战伤害 +20%"
+rarity = 0
+tags = Array[String](["melee", "offense"])
+max_stacks = 5
+target_stat = "melee_damage_bonus"
+modifier_type = 1
+value = 0.2

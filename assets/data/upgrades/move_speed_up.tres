@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/upgrade_data.gd" id="1_up"]
+
+[resource]
+script = ExtResource("1_up")
+id = "move_speed_up"
+display_name = "风之步"
+description = "移动速度 +15%"
+rarity = 0
+tags = Array[String](["movement"])
+max_stacks = 3
+target_stat = "move_speed_bonus"
+modifier_type = 1
+value = 0.15

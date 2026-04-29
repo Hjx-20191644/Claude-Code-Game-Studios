@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="WaveData" load_steps=12 format=3 uid="uid://wave_config_001"]
+
+[ext_resource type="Script" path="res://src/core/wave_data.gd" id="1_data"]
+[ext_resource type="Script" path="res://src/core/wave_config.gd" id="2_entry"]
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w1"]
+wave_number = 1
+melee_count = 3
+ranged_count = 0
+spawn_delay = 0.5
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w2"]
+wave_number = 2
+melee_count = 4
+ranged_count = 1
+spawn_delay = 0.5
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w3"]
+wave_number = 3
+melee_count = 4
+ranged_count = 2
+spawn_delay = 0.4
+has_upgrade_window = true
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w4"]
+wave_number = 4
+melee_count = 5
+ranged_count = 3
+spawn_delay = 0.4
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w5"]
+wave_number = 5
+melee_count = 6
+ranged_count = 4
+spawn_delay = 0.3
+has_upgrade_window = true
+
+[resource]
+script = ExtResource("1_data")
+post_wave_delay = 2.0
+upgrade_interval = 2
+upgrade_timeout = 30.0
+infinite_melee_increment = 2
+infinite_ranged_increment = 1
+waves = Array[Resource]([SubResource("w1"), SubResource("w2"), SubResource("w3"), SubResource("w4"), SubResource("w5")])

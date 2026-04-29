@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="WeaponData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/weapon_data.gd" id="1_weapon"]
+
+[resource]
+script = ExtResource("1_weapon")
+weapon_name = "大剑"
+weapon_type = "melee"
+base_damage = 25
+attack_cooldown = 0.5
+melee_angle = 120.0
+melee_radius = 80.0
+bullet_speed = 0.0
+max_range = 0.0
+scatter_degrees = 0.0
+max_ammo = 0

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/enemy_data.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+enemy_name = "近战敌人"
+enemy_type = "melee"
+max_hp = 30
+move_speed = 100.0
+contact_damage = 15
+contact_damage_interval = 0.5
+knockback_speed = 400.0
+contact_radius = 24.0
