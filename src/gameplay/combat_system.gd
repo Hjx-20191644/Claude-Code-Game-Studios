@@ -61,8 +61,8 @@ func _find_player() -> Player:
 
 
 func _load_default_weapons() -> void:
-	left_weapon = GameConfig.get_weapon_data("great_sword")
-	right_weapon = GameConfig.get_weapon_data("pistol")
+	left_weapon = GameConfig.get_weapon_data("dual_daggers")
+	right_weapon = GameConfig.get_weapon_data("shotgun")
 
 
 func _init_ammo() -> void:
@@ -192,6 +192,7 @@ func _try_melee_attack() -> void:
 
 
 func _do_melee_sweep(weapon: WeaponData) -> void:
+t_flash_player_melee()
 	var enemies := _get_enemies_in_fan(player.global_position, player.aim_direction, weapon.melee_radius, weapon.melee_angle)
 
 	for enemy in enemies:
@@ -288,6 +289,17 @@ func _consume_ammo(slot: String) -> void:
 		"right":
 			_right_ammo = maxi(0, _right_ammo - 1)
 			_right_ammo_timer = 0.0
+
+
+func _flash_player_melee() -> void:
+	if not player:
+		return
+	var sprite := player.get_node_or_null("Sprite") as ColorRect
+	if not sprite:
+		return
+	sprite.modulate = Color(1.5, 1.5, 1.5)
+	var tw := create_tween()
+	tw.tween_property(sprite, "modulate", Color.WHITE, 0.08)
 
 
 # --- Fan detection ---

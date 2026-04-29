@@ -12,6 +12,19 @@ class_name EnemyData
 @export var contact_damage_interval: float = 0.5
 @export var knockback_speed: float = 400.0
 @export var contact_radius: float = 24.0
+@export var flank_speed: float = 200.0
+@export var flank_distance: float = 100.0
+@export var charge_speed: float = 500.0
+@export var charge_duration: float = 0.5
+# Ranged-only params
+@export var shoot_range: float = 300.0
+@export var evade_range: float = 120.0
+@export var approach_speed: float = 120.0
+@export var evade_speed: float = 250.0
+@export var evade_distance: float = 80.0
+@export var shoot_interval: float = 1.5
+@export var bullet_speed: float = 250.0
+@export var bullet_damage: int = 10
 
 
 func validate() -> void:

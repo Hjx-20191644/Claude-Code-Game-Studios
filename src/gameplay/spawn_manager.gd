@@ -14,7 +14,7 @@ var _enemy_scene: PackedScene = preload("res://scenes/enemy.tscn")
 # Type → data file ID mapping
 var _type_data_map := {
 	"melee": "melee_enemy",
-	"ranged": "melee_enemy",  # MVP: same data for ranged until ranged enemy is implemented
+	"ranged": "ranged_enemy",
 }
 
 @onready var _player: Player = _find_player()
@@ -26,7 +26,7 @@ func _ready() -> void:
 
 
 ## Spawn N enemies of a given type. Called by WaveManager.
-func spawn_enemies(enemy_type: String, count: int, _wave_number: int = 1, spawn_delay: float = 0.4) -> void:
+func spawn_enemies(enemy_type: String, count: int, wave_number: int = 1, spawn_delay: float = 0.4) -> void:
 	assert(enemy_type in _type_data_map, "SpawnManager: unknown enemy_type '%s'" % enemy_type)
 	if count <= 0:
 		return
@@ -41,7 +41,7 @@ func spawn_enemies(enemy_type: String, count: int, _wave_number: int = 1, spawn_
 
 	for i in count:
 		var pos := _compute_spawn_position(base_angle, i)
-		_spawn_one(pos, data)
+		_spawn_one(pos, data, wave_number)
 		if spawn_delay > 0.0 and i < count - 1:
 			await get_tree().create_timer(spawn_delay).timeout
 
@@ -66,9 +66,23 @@ func _compute_spawn_position(base_angle: float, _index: int) -> Vector2:
 	return pos
 
 
-func _spawn_one(pos: Vector2, data: EnemyData) -> void:
+func _spawn_one(pos: Vector2, data: EnemyData, wave_number: int) -> void:
 	var enemy := _enemy_scene.instantiate() as Enemy
-	enemy.enemy_data = data
+
+	# Create a per-instance copy of data so we can mutate it for wave scaling
+	var scaled := data.duplicate() as EnemyData
+	var waves_elapsed := maxi(0, wave_number - 1)
+
+	# HP scaling: melee +10%/wave, ranged +5%/wave
+	if data.enemy_type == "melee":
+		scaled.max_hp = int(data.max_hp * (1.0 + 0.1 * waves_elapsed))
+	else:
+		scaled.max_hp = int(data.max_hp * (1.0 + 0.05 * waves_elapsed))
+
+	# Damage scaling: +1 per wave
+	scaled.contact_damage = data.contact_damage + waves_elapsed
+
+	enemy.enemy_data = scaled
 	enemy.global_position = pos
 	_enemies_container.add_child(enemy)
 
