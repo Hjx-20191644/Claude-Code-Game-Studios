@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/upgrade_data.gd" id="1_up"]
+
+[resource]
+script = ExtResource("1_up")
+id = "lifesteal_up"
+display_name = "嗜血"
+description = "造成伤害的 5% 转化为生命"
+rarity = 2
+tags = Array[String](["melee", "defense", "healing"])
+max_stacks = 5
+target_stat = "lifesteal_ratio"
+modifier_type = 0
+value = 0.05

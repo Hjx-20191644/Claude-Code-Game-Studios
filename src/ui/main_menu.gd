@@ -1,11 +1,27 @@
 extends Control
 class_name MainMenu
 
-## Main menu screen: game title, Start Game, Quit.
+## Main menu screen: game title, Start Game → weapon select, Leaderboard, Settings, Quit.
+
+var _leaderboard_ui: LeaderboardUI
+var _settings_ui: SettingsUI
+var _weapon_select_ui: WeaponSelectUI
+var _main_panel: VBoxContainer
 
 
 func _ready() -> void:
+	_leaderboard_ui = get_node_or_null("LeaderboardUI") as LeaderboardUI
+	_settings_ui = get_node_or_null("SettingsUI") as SettingsUI
+	_weapon_select_ui = get_node_or_null("WeaponSelectUI") as WeaponSelectUI
+	SettingsManager.apply_window_mode()
 	_build_ui()
+	# Move overlay panels to top of draw order
+	if _leaderboard_ui:
+		move_child(_leaderboard_ui, get_child_count() - 1)
+	if _settings_ui:
+		move_child(_settings_ui, get_child_count() - 1)
+	if _weapon_select_ui:
+		move_child(_weapon_select_ui, get_child_count() - 1)
 
 
 func _build_ui() -> void:
@@ -47,8 +63,16 @@ func _build_ui() -> void:
 	panel.add_child(spacer)
 
 	# Buttons
+	_main_panel = panel
+
 	var start_btn := _make_button("Start Game", _on_start)
 	panel.add_child(start_btn)
+
+	var lb_btn := _make_button("Leaderboard", _on_leaderboard)
+	panel.add_child(lb_btn)
+
+	var settings_btn := _make_button("Settings", _on_settings)
+	panel.add_child(settings_btn)
 
 	var quit_btn := _make_button("Quit", _on_quit)
 	panel.add_child(quit_btn)
@@ -57,7 +81,29 @@ func _build_ui() -> void:
 
 
 func _on_start() -> void:
+	if _weapon_select_ui:
+		_weapon_select_ui._on_back_callback = func(): _main_panel.show()
+		_weapon_select_ui._on_start_callback = _start_game
+		_main_panel.hide()
+		_weapon_select_ui.show_panel()
+
+
+func _start_game() -> void:
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
+
+
+func _on_leaderboard() -> void:
+	if _leaderboard_ui:
+		_leaderboard_ui._on_back_callback = func(): _main_panel.show()
+		_main_panel.hide()
+		_leaderboard_ui.show_entries()
+
+
+func _on_settings() -> void:
+	if _settings_ui:
+		_settings_ui._on_back_callback = func(): _main_panel.show()
+		_main_panel.hide()
+		_settings_ui.show_panel()
 
 
 func _on_quit() -> void:

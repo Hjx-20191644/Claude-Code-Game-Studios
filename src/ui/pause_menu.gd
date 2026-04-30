@@ -11,6 +11,12 @@ func _ready() -> void:
 	mouse_filter = MOUSE_FILTER_STOP
 	visible = false
 
+	# Fill entire screen so CenterContainer works
+	anchor_left = 0.0
+	anchor_right = 1.0
+	anchor_top = 0.0
+	anchor_bottom = 1.0
+
 	var overlay := ColorRect.new()
 	overlay.color = Color(0.0, 0.0, 0.0, blur_alpha)
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)

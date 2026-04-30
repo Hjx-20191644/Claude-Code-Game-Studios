@@ -49,7 +49,13 @@ func _ready() -> void:
 		health.current_hp = enemy_data.max_hp
 		health.death_linger = GameConfig.ENEMY_DEATH_LINGER
 		_is_ranged = enemy_data.enemy_type == "ranged"
-		if _is_ranged:
+		if enemy_data.is_elite:
+			sprite.scale = Vector2(enemy_data.elite_scale, enemy_data.elite_scale)
+			sprite.color = Color(1.0, 0.84, 0.0)
+			health.is_elite = true
+			health.max_hp = int(health.max_hp * enemy_data.elite_hp_mult)
+			health.current_hp = health.max_hp
+		elif _is_ranged:
 			sprite.color = Color(0.8, 0.4, 0.2)
 		else:
 			sprite.color = Color(0.3, 0.7, 1.0)

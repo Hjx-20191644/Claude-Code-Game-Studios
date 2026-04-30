@@ -25,6 +25,12 @@ class_name EnemyData
 @export var shoot_interval: float = 1.5
 @export var bullet_speed: float = 250.0
 @export var bullet_damage: int = 10
+# Elite
+@export var is_elite: bool = false
+@export var elite_scale: float = 2.0
+@export var elite_hp_mult: float = 5.0
+@export var elite_damage_mult: float = 2.0
+@export var elite_score_bonus: int = 500
 
 
 func validate() -> void:

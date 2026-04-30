@@ -13,11 +13,20 @@ var _dodge_direction: Vector2 = Vector2.ZERO
 
 @onready var player: Player = _find_player()
 @onready var input_buffer: Node = $"../InputBuffer"
+var _upgrade_applier: UpgradeApplier
 
 
 func _ready() -> void:
 	assert(GameConfig.DODGE_COOLDOWN >= 0.1, "DodgeSystem: DODGE_COOLDOWN must be >= 0.1")
+	_upgrade_applier = get_node("../UpgradeApplier") as UpgradeApplier
 	input_buffer.dodge_pressed.connect(_on_dodge_pressed)
+
+
+func _effective_cooldown() -> float:
+	var base := GameConfig.DODGE_COOLDOWN
+	if _upgrade_applier:
+		base += _upgrade_applier.get_absolute("dodge_cooldown")
+	return maxf(0.1, base)
 
 
 func _physics_process(delta: float) -> void:
@@ -28,7 +37,7 @@ func _physics_process(delta: float) -> void:
 				_end_dodge()
 		State.COOLDOWN:
 			_cooldown_timer += delta
-			if _cooldown_timer >= GameConfig.DODGE_COOLDOWN:
+			if _cooldown_timer >= _effective_cooldown():
 				_state = State.READY
 
 
@@ -63,7 +72,7 @@ func _end_dodge() -> void:
 	player.end_dodge_override()
 	_state = State.COOLDOWN
 	_cooldown_timer = 0.0
-	EventBus.dodge_cooldown_changed.emit(GameConfig.DODGE_COOLDOWN)
+	EventBus.dodge_cooldown_changed.emit(_effective_cooldown())
 
 
 func _dodge_duration() -> float:
@@ -72,8 +81,9 @@ func _dodge_duration() -> float:
 
 ## Returns cooldown progress as 0.0 - 1.0 (1.0 = ready).
 func get_cooldown_ratio() -> float:
-	if _state == State.COOLDOWN and GameConfig.DODGE_COOLDOWN > 0.0:
-		return _cooldown_timer / GameConfig.DODGE_COOLDOWN
+	var cd := _effective_cooldown()
+	if _state == State.COOLDOWN and cd > 0.0:
+		return _cooldown_timer / cd
 	return 1.0
 
 

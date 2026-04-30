@@ -15,10 +15,12 @@ var is_dodging: bool = false
 var dodge_override_velocity: Vector2 = Vector2.ZERO
 
 @onready var sprite: ColorRect = $Sprite
+var _upgrade_applier: UpgradeApplier
 
 
 func _ready() -> void:
 	add_to_group("players")
+	_upgrade_applier = get_node("/root/Main/Systems/UpgradeApplier") as UpgradeApplier
 
 
 func _physics_process(delta: float) -> void:
@@ -40,7 +42,12 @@ func _physics_process(delta: float) -> void:
 	else:
 		if input_buffer:
 			move_direction = input_buffer.move_vector.normalized() if input_buffer.move_vector.length() > 0.1 else Vector2.ZERO
-		velocity = move_direction * base_speed
+		var speed_mult := 1.0
+		var speed_flat := 0.0
+		if _upgrade_applier:
+			speed_mult = _upgrade_applier.get_multiplier("move_speed_bonus")
+			speed_flat = _upgrade_applier.get_absolute("move_speed_flat")
+		velocity = move_direction * (base_speed + speed_flat) * speed_mult
 
 	move_and_slide()
 

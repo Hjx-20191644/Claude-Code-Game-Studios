@@ -146,11 +146,13 @@ func _on_dodge_started() -> void:
 
 # --- Enemy death burst ---
 
-func _on_enemy_killed(_kill_type: String, position: Vector2, enemy_color: Color) -> void:
+func _on_enemy_killed(_kill_type: String, position: Vector2, enemy_color: Color, is_elite: bool = false) -> void:
 	if _is_dead:
 		return
-	_emit_burst(position, death_burst_count, enemy_color,
-		death_burst_speed_min, death_burst_speed_max, death_burst_lifetime, 5.0)
+	var count := death_burst_count * 2 if is_elite else death_burst_count
+	var size := 8.0 if is_elite else 5.0
+	_emit_burst(position, count, enemy_color,
+		death_burst_speed_min, death_burst_speed_max, death_burst_lifetime, size)
 
 
 # --- Player death ---

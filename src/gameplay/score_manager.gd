@@ -52,7 +52,7 @@ func get_stats() -> RunStats:
 
 # --- Signal handlers ---
 
-func _on_enemy_killed(kill_type: String, _position: Vector2, _color: Color) -> void:
+func _on_enemy_killed(kill_type: String, _position: Vector2, _color: Color, is_elite: bool = false) -> void:
 	match kill_type:
 		"melee":
 			_stats.melee_kills += 1
@@ -63,6 +63,9 @@ func _on_enemy_killed(kill_type: String, _position: Vector2, _color: Color) -> v
 		_:
 			push_warning("ScoreManager: unknown kill_type '%s', ignoring" % kill_type)
 			return
+
+	if is_elite:
+		_stats.score += 500
 
 	_stats.total_kills += 1
 	EventBus.score_changed.emit(_stats.score)
@@ -96,6 +99,18 @@ func _on_player_died() -> void:
 	_frozen_survival_time = _get_survival_time()
 	_is_timing = false
 	EventBus.stats_updated.emit()
+	_save_to_leaderboard()
+
+
+func _save_to_leaderboard() -> void:
+	var s := get_stats()
+	LeaderboardManager.save_entry({
+		"score": s.score,
+		"wave": s.wave_reached,
+		"kills": s.total_kills,
+		"time": s.survival_time,
+		"date": Time.get_date_string_from_system(),
+	})
 
 
 # --- Private ---

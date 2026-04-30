@@ -131,7 +131,7 @@ func _on_wave_spawn_complete(count: int, _enemy_type: String) -> void:
 		_check_wave_complete()
 
 
-func _on_enemy_killed(_kill_type: String, _position: Vector2, _color: Color) -> void:
+func _on_enemy_killed(_kill_type: String, _position: Vector2, _color: Color, _is_elite: bool = false) -> void:
 	if _state != State.WAVE_ACTIVE:
 		return
 	_enemies_killed += 1

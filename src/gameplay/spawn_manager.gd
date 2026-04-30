@@ -10,6 +10,7 @@ class_name SpawnManager
 @export var max_spawn_retries: int = 3
 
 var _enemy_scene: PackedScene = preload("res://scenes/enemy.tscn")
+var _elite_spawned_this_wave: bool = false
 
 # Type → data file ID mapping
 var _type_data_map := {
@@ -23,6 +24,10 @@ var _type_data_map := {
 
 func _ready() -> void:
 	assert(spawn_max_distance > spawn_min_distance, "SpawnManager: max_distance must be > min_distance")
+	EventBus.wave_started.connect(_on_wave_started)
+
+func _on_wave_started(_wave_number: int) -> void:
+	_elite_spawned_this_wave = false
 
 
 ## Spawn N enemies of a given type. Called by WaveManager.
@@ -37,11 +42,15 @@ func spawn_enemies(enemy_type: String, count: int, wave_number: int = 1, spawn_d
 		push_warning("SpawnManager: enemy data not found for type '%s'" % enemy_type)
 		return
 
+	var elite_wave := wave_number > 0 and wave_number % 5 == 0
 	var base_angle := randf() * TAU
 
 	for i in count:
 		var pos := _compute_spawn_position(base_angle, i)
-		_spawn_one(pos, data, wave_number)
+		var is_elite := elite_wave and not _elite_spawned_this_wave
+		_spawn_one(pos, data, wave_number, is_elite)
+		if is_elite:
+			_elite_spawned_this_wave = true
 		if spawn_delay > 0.0 and i < count - 1:
 			await get_tree().create_timer(spawn_delay).timeout
 
@@ -66,7 +75,7 @@ func _compute_spawn_position(base_angle: float, _index: int) -> Vector2:
 	return pos
 
 
-func _spawn_one(pos: Vector2, data: EnemyData, wave_number: int) -> void:
+func _spawn_one(pos: Vector2, data: EnemyData, wave_number: int, is_elite: bool = false) -> void:
 	var enemy := _enemy_scene.instantiate() as Enemy
 
 	# Create a per-instance copy of data so we can mutate it for wave scaling
@@ -81,6 +90,12 @@ func _spawn_one(pos: Vector2, data: EnemyData, wave_number: int) -> void:
 
 	# Damage scaling: +1 per wave
 	scaled.contact_damage = data.contact_damage + waves_elapsed
+
+	# Elite: bonus damage multiplier on top of wave scaling
+	if is_elite:
+		scaled.is_elite = true
+		scaled.contact_damage = int(scaled.contact_damage * scaled.elite_damage_mult)
+		scaled.bullet_damage = int(scaled.bullet_damage * scaled.elite_damage_mult)
 
 	enemy.enemy_data = scaled
 	enemy.global_position = pos

@@ -4,9 +4,6 @@ class_name AudioManager
 ## Procedural audio: generates short synthesized sound effects via AudioStreamWAV.
 ## No external audio files needed — all sounds are generated from PCM data.
 
-@export var master_volume_db: float = -6.0
-@export var sfx_volume_db: float = 0.0
-
 const RATE := 44100.0
 const TAU := 6.283185
 
@@ -31,7 +28,7 @@ func _on_damage_taken(_amount: float, _pos: Vector2) -> void:
 	_play_noise(0.08)
 
 
-func _on_enemy_killed(_kill_type: String, _pos: Vector2, _color: Color) -> void:
+func _on_enemy_killed(_kill_type: String, _pos: Vector2, _color: Color, _is_elite: bool = false) -> void:
 	_play_sweep(400.0, 100.0, 0.15)
 
 
@@ -120,7 +117,10 @@ func _emit(data: PackedByteArray, frame_count: int) -> void:
 
 	var player := AudioStreamPlayer.new()
 	player.stream = wav
-	player.volume_db = sfx_volume_db + master_volume_db
+	player.volume_db = SettingsManager.effective_sfx_db(
+		SettingsManager.get_master_volume(),
+		SettingsManager.get_sfx_volume()
+	)
 	add_child(player)
 	player.play()
 	player.finished.connect(player.queue_free)

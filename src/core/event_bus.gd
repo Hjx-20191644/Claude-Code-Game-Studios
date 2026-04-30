@@ -3,7 +3,7 @@ extends Node
 # --- Health/Damage ---
 signal damage_dealt(amount: float, hit_position: Vector2, attack_type: String)
 signal damage_taken(amount: float, position: Vector2)
-signal enemy_killed(kill_type: String, position: Vector2, enemy_color: Color)
+signal enemy_killed(kill_type: String, position: Vector2, enemy_color: Color, is_elite: bool)
 signal player_died
 
 # --- Wave ---

@@ -31,6 +31,7 @@ var _melee_first_weapon_dmg: int = 0
 # References
 @onready var player: Player = _find_player()
 @onready var input_buffer: Node = $"../InputBuffer"
+var _upgrade_applier: UpgradeApplier
 var _bullet_scene: PackedScene = preload("res://scenes/bullet.tscn")
 var _arena_enemies: Node2D
 
@@ -38,6 +39,7 @@ var _arena_enemies: Node2D
 func _ready() -> void:
 	_load_default_weapons()
 	_init_ammo()
+	_upgrade_applier = get_node("../UpgradeApplier") as UpgradeApplier
 	_arena_enemies = get_node("../../Arena/Enemies")
 	input_buffer.melee_attack_pressed.connect(_on_melee_pressed)
 	input_buffer.ranged_attack_pressed.connect(_on_ranged_pressed)
@@ -61,8 +63,8 @@ func _find_player() -> Player:
 
 
 func _load_default_weapons() -> void:
-	left_weapon = GameConfig.get_weapon_data("dual_daggers")
-	right_weapon = GameConfig.get_weapon_data("shotgun")
+	left_weapon = GameConfig.get_weapon_data(WeaponSelection.left_weapon_id)
+	right_weapon = GameConfig.get_weapon_data(WeaponSelection.right_weapon_id)
 
 
 func _init_ammo() -> void:
@@ -183,7 +185,7 @@ func _try_melee_attack() -> void:
 		_dual_melee_timer = GameConfig.DUAL_MELEE_ATTACK_INTERVAL
 		# Remember first hit for overlap bonus
 		_melee_first_hits = _get_enemies_in_fan(player.global_position, aim, melee_weapons[0].melee_radius, melee_weapons[0].melee_angle)
-		_melee_first_weapon_dmg = melee_weapons[0].base_damage
+		_melee_first_weapon_dmg = _calc_melee_damage(melee_weapons[0].base_damage, _get_melee_damage_mult(), _roll_crit())
 		# Defer second weapon
 		await get_tree().create_timer(GameConfig.DUAL_MELEE_ATTACK_INTERVAL).timeout
 		_dual_melee_queue = false
@@ -192,11 +194,15 @@ func _try_melee_attack() -> void:
 
 
 func _do_melee_sweep(weapon: WeaponData) -> void:
-t_flash_player_melee()
+	_flash_player_melee()
 	var enemies := _get_enemies_in_fan(player.global_position, player.aim_direction, weapon.melee_radius, weapon.melee_angle)
+	var dmg_mult := _get_melee_damage_mult()
+	var is_crit := _roll_crit()
 
 	for enemy in enemies:
-		enemy.take_damage(weapon.base_damage, "melee", player, GameConfig.MELEE_KNOCKBACK_DISTANCE)
+		var dmg := _calc_melee_damage(weapon.base_damage, dmg_mult, is_crit)
+		enemy.take_damage(dmg, "melee", player, GameConfig.MELEE_KNOCKBACK_DISTANCE * weapon.knockback_mult)
+		_apply_lifesteal(dmg)
 
 
 func _do_dual_melee_second(weapon: WeaponData, slot: String, aim: Vector2) -> void:
@@ -205,11 +211,15 @@ func _do_dual_melee_second(weapon: WeaponData, slot: String, aim: Vector2) -> vo
 	for enemy in enemies:
 		if enemy in _melee_first_hits:
 			# Overlap: (dmg_a + dmg_b) * 1.2 total, first already dealt dmg_a
-			var overlap_total := int(float(_melee_first_weapon_dmg + weapon.base_damage) * GameConfig.DUAL_MELEE_OVERLAP_BONUS)
+			var second_dmg := _calc_melee_damage(weapon.base_damage, _get_melee_damage_mult(), _roll_crit())
+			var overlap_total := int(float(_melee_first_weapon_dmg + second_dmg) * GameConfig.DUAL_MELEE_OVERLAP_BONUS)
 			var remaining := overlap_total - _melee_first_weapon_dmg
-			enemy.take_damage(remaining, "melee", player, GameConfig.MELEE_KNOCKBACK_DISTANCE)
+			enemy.take_damage(remaining, "melee", player, GameConfig.MELEE_KNOCKBACK_DISTANCE * weapon.knockback_mult)
+			_apply_lifesteal(remaining)
 		else:
-			enemy.take_damage(weapon.base_damage, "melee", player, GameConfig.MELEE_KNOCKBACK_DISTANCE)
+			var dmg := _calc_melee_damage(weapon.base_damage, _get_melee_damage_mult(), _roll_crit())
+			enemy.take_damage(dmg, "melee", player, GameConfig.MELEE_KNOCKBACK_DISTANCE * weapon.knockback_mult)
+			_apply_lifesteal(dmg)
 
 	_melee_first_hits.clear()
 	_apply_melee_cooldown(slot)
@@ -244,13 +254,24 @@ func _try_ranged_attack() -> void:
 
 	for i in ranged_weapons.size():
 		var weapon := ranged_weapons[i]
-		var bullet_dir := aim
+		var bullets := maxi(1, weapon.bullet_count)
+		var half_spread := deg_to_rad(weapon.scatter_degrees / 2.0)
 
-		if is_dual:
-			bullet_dir = aim.rotated(deg_to_rad(randf_range(-weapon.scatter_degrees, weapon.scatter_degrees)))
+		for j in bullets:
+			var bullet_dir := aim
+			if bullets > 1:
+				var t := float(j) / float(bullets - 1)
+				var angle := lerpf(-half_spread, half_spread, t)
+				bullet_dir = aim.rotated(angle)
+			elif is_dual:
+				bullet_dir = aim.rotated(deg_to_rad(randf_range(-weapon.scatter_degrees, weapon.scatter_degrees)))
 
-		var dmg := int(float(weapon.base_damage) * GameConfig.DUAL_RANGED_DAMAGE_MULT) if is_dual else weapon.base_damage
-		_spawn_bullet(weapon, bullet_dir, dmg)
+			var dmg := weapon.base_damage
+			if is_dual:
+				dmg = int(float(dmg) * GameConfig.DUAL_RANGED_DAMAGE_MULT)
+			dmg = int(float(dmg) * _get_ranged_damage_mult())
+			_spawn_bullet(weapon, bullet_dir, dmg)
+
 		_consume_ammo(slots[i])
 
 	if is_dual:
@@ -278,6 +299,10 @@ func _spawn_bullet(weapon: WeaponData, direction: Vector2, damage: int) -> void:
 	bullet.max_range = weapon.max_range
 	bullet.source = player
 	bullet.damage_type = "ranged"
+	bullet.knockback_value = GameConfig.MELEE_KNOCKBACK_DISTANCE * weapon.knockback_mult
+	bullet.pierce_count = weapon.pierce_count
+	bullet.explosive_radius = weapon.explosive_radius
+	bullet.collision_mask = 2 + 128  # Enemies + Walls
 	get_node("../../Arena/Effects").add_child(bullet)
 
 
@@ -318,3 +343,38 @@ func _get_enemies_in_fan(origin: Vector2, direction: Vector2, radius: float, ang
 			result.append(enemy)
 
 	return result
+
+
+# --- Upgrade-aware damage helpers ---
+
+func _get_melee_damage_mult() -> float:
+	if _upgrade_applier:
+		return _upgrade_applier.get_multiplier("melee_damage_bonus")
+	return 1.0
+
+
+func _get_ranged_damage_mult() -> float:
+	if _upgrade_applier:
+		return _upgrade_applier.get_multiplier("ranged_damage_bonus")
+	return 1.0
+
+
+func _roll_crit() -> bool:
+	if not _upgrade_applier:
+		return false
+	return randf() < _upgrade_applier.get_raw("crit_chance")
+
+
+func _calc_melee_damage(base: int, dmg_mult: float, is_crit: bool) -> int:
+	var dmg := float(base) * dmg_mult
+	if is_crit:
+		dmg *= 2.0
+	return maxi(1, int(dmg))
+
+
+func _apply_lifesteal(damage: int) -> void:
+	if not _upgrade_applier or not player:
+		return
+	var ratio := _upgrade_applier.get_raw("lifesteal_ratio")
+	if ratio > 0.0:
+		player.heal(maxi(1, int(float(damage) * ratio)))

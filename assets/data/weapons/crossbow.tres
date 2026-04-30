@@ -4,14 +4,16 @@
 
 [resource]
 script = ExtResource("1_weapon")
-weapon_name = "霰弹枪"
+weapon_name = "弩"
 weapon_type = "ranged"
-base_damage = 35
-attack_cooldown = 0.9
+base_damage = 40
+attack_cooldown = 0.8
 melee_angle = 0.0
 melee_radius = 0.0
-bullet_speed = 400.0
-max_range = 350.0
-scatter_degrees = 15.0
-bullet_count = 3
-max_ammo = 6
+knockback_mult = 1.5
+bullet_speed = 450.0
+max_range = 400.0
+scatter_degrees = 0.0
+bullet_count = 1
+max_ammo = 8
+pierce_count = 3

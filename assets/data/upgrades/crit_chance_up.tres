@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/upgrade_data.gd" id="1_up"]
+
+[resource]
+script = ExtResource("1_up")
+id = "crit_chance_up"
+display_name = "会心一击"
+description = "暴击率 +10%"
+rarity = 1
+tags = Array[String](["melee", "offense"])
+max_stacks = 3
+target_stat = "crit_chance"
+modifier_type = 0
+value = 0.1

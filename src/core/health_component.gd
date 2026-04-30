@@ -8,6 +8,7 @@ class_name HealthComponent
 
 var current_hp: int = 0
 var is_invincible: bool = false
+var is_elite: bool = false
 var invincible_timer: float = 0.0
 
 ## Damage modifiers (populated by upgrade system).
@@ -130,7 +131,7 @@ func _enter_dying(damage_type: String) -> void:
 		var sprite_node := get_parent().get_node_or_null("Sprite")
 		if sprite_node and sprite_node is ColorRect:
 			color = sprite_node.color
-		EventBus.enemy_killed.emit(damage_type, global_position, color)
+		EventBus.enemy_killed.emit(damage_type, global_position, color, is_elite)
 
 
 func _is_player() -> bool:
