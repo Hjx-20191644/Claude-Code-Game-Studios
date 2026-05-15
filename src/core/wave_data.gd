@@ -12,7 +12,7 @@ class_name WaveData
 @export var waves: Array = []  # Array[WaveConfig] at runtime; may load as Resource
 
 
-## Build MVP 5-wave config programmatically. Used as fallback when .tres
+## Build default 10-wave config programmatically. Used as fallback when .tres
 ## sub-resources fail to deserialize as typed WaveConfig.
 static func create_default() -> WaveData:
 	var data := WaveData.new()
@@ -23,20 +23,28 @@ static func create_default() -> WaveData:
 	data.infinite_ranged_increment = 1
 
 	data.waves = [
-		_make_wave(1, 3, 0, 0.5, false),
-		_make_wave(2, 4, 1, 0.5, false),
-		_make_wave(3, 4, 2, 0.4, true),
-		_make_wave(4, 5, 3, 0.4, false),
-		_make_wave(5, 6, 4, 0.3, true),
+		_make_wave(1, 3, 0, 0, 0, 0, 0.5, false),
+		_make_wave(2, 4, 1, 0, 0, 0, 0.5, true),
+		_make_wave(3, 4, 2, 1, 0, 0, 0.4, false),
+		_make_wave(4, 4, 2, 1, 1, 0, 0.4, true),
+		_make_wave(5, 5, 3, 1, 1, 0, 0.4, false),
+		_make_wave(6, 5, 3, 1, 1, 0, 0.3, true),
+		_make_wave(7, 5, 3, 2, 0, 1, 0.3, false),
+		_make_wave(8, 6, 4, 2, 1, 0, 0.3, true),
+		_make_wave(9, 6, 4, 2, 0, 1, 0.25, false),
+		_make_wave(10, 7, 5, 2, 2, 0, 0.25, true),
 	]
 	return data
 
 
-static func _make_wave(num: int, melee: int, ranged: int, delay: float, upgrade: bool) -> WaveConfig:
+static func _make_wave(num: int, melee: int, ranged: int, charger: int, exploder: int, tank: int, delay: float, upgrade: bool) -> WaveConfig:
 	var w := WaveConfig.new()
 	w.wave_number = num
 	w.melee_count = melee
 	w.ranged_count = ranged
+	w.charger_count = charger
+	w.exploder_count = exploder
+	w.tank_count = tank
 	w.spawn_delay = delay
 	w.has_upgrade_window = upgrade
 	return w
@@ -53,3 +61,6 @@ func validate() -> void:
 			assert(w.wave_number >= 1, "WaveData: wave_number must be >= 1")
 			assert(w.melee_count >= 0, "WaveData: melee_count must be >= 0")
 			assert(w.ranged_count >= 0, "WaveData: ranged_count must be >= 0")
+			assert(w.charger_count >= 0, "WaveData: charger_count must be >= 0")
+			assert(w.exploder_count >= 0, "WaveData: exploder_count must be >= 0")
+			assert(w.tank_count >= 0, "WaveData: tank_count must be >= 0")

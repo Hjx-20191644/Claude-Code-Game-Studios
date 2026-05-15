@@ -16,6 +16,9 @@ var _elite_spawned_this_wave: bool = false
 var _type_data_map := {
 	"melee": "melee_enemy",
 	"ranged": "ranged_enemy",
+	"charger": "charger",
+	"exploder": "exploder",
+	"tank": "tank",
 }
 
 @onready var _player: Player = _find_player()

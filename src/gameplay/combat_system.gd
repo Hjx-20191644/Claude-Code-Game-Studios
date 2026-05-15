@@ -67,11 +67,18 @@ func _load_default_weapons() -> void:
 	right_weapon = GameConfig.get_weapon_data(WeaponSelection.right_weapon_id)
 
 
+func _get_max_ammo(base: int) -> int:
+	var bonus := 0
+	if _upgrade_applier:
+		bonus = int(_upgrade_applier.get_absolute("max_ammo"))
+	return base + bonus
+
+
 func _init_ammo() -> void:
 	if left_weapon and left_weapon.max_ammo > 0:
-		_left_ammo = left_weapon.max_ammo
+		_left_ammo = _get_max_ammo(left_weapon.max_ammo)
 	if right_weapon and right_weapon.max_ammo > 0:
-		_right_ammo = right_weapon.max_ammo
+		_right_ammo = _get_max_ammo(right_weapon.max_ammo)
 
 
 func reset_ammo() -> void:
@@ -106,16 +113,16 @@ func _update_cooldowns(delta: float) -> void:
 
 
 func _update_ammo(delta: float) -> void:
-	if left_weapon and left_weapon.max_ammo > 0 and _left_ammo < left_weapon.max_ammo:
+	if left_weapon and left_weapon.max_ammo > 0 and _left_ammo < _get_max_ammo(left_weapon.max_ammo):
 		_left_ammo_timer += delta
 		if _left_ammo_timer >= GameConfig.RANGED_AMMO_REGEN_RATE:
-			_left_ammo = mini(left_weapon.max_ammo, _left_ammo + 1)
+			_left_ammo = mini(_get_max_ammo(left_weapon.max_ammo), _left_ammo + 1)
 			_left_ammo_timer -= GameConfig.RANGED_AMMO_REGEN_RATE
 
-	if right_weapon and right_weapon.max_ammo > 0 and _right_ammo < right_weapon.max_ammo:
+	if right_weapon and right_weapon.max_ammo > 0 and _right_ammo < _get_max_ammo(right_weapon.max_ammo):
 		_right_ammo_timer += delta
 		if _right_ammo_timer >= GameConfig.RANGED_AMMO_REGEN_RATE:
-			_right_ammo = mini(right_weapon.max_ammo, _right_ammo + 1)
+			_right_ammo = mini(_get_max_ammo(right_weapon.max_ammo), _right_ammo + 1)
 			_right_ammo_timer -= GameConfig.RANGED_AMMO_REGEN_RATE
 
 
@@ -226,11 +233,14 @@ func _do_dual_melee_second(weapon: WeaponData, slot: String, aim: Vector2) -> vo
 
 
 func _apply_melee_cooldown(slot: String) -> void:
+	var speed_mult := 1.0
+	if _upgrade_applier:
+		speed_mult = _upgrade_applier.get_multiplier("attack_speed")
 	match slot:
 		"left":
-			_left_cooldown = left_weapon.attack_cooldown
+			_left_cooldown = left_weapon.attack_cooldown * speed_mult
 		"right":
-			_right_cooldown = right_weapon.attack_cooldown
+			_right_cooldown = right_weapon.attack_cooldown * speed_mult
 
 
 # --- Ranged attack ---
@@ -275,7 +285,10 @@ func _try_ranged_attack() -> void:
 		_consume_ammo(slots[i])
 
 	if is_dual:
-		var shared_cd := ranged_weapons[0].attack_cooldown * GameConfig.DUAL_RANGED_COOLDOWN_MULT
+		var speed_mult := 1.0
+		if _upgrade_applier:
+			speed_mult = _upgrade_applier.get_multiplier("attack_speed")
+		var shared_cd := ranged_weapons[0].attack_cooldown * GameConfig.DUAL_RANGED_COOLDOWN_MULT * speed_mult
 		_left_cooldown = shared_cd if left_weapon.weapon_type == "ranged" else _left_cooldown
 		_right_cooldown = shared_cd if right_weapon.weapon_type == "ranged" else _right_cooldown
 	else:
@@ -283,11 +296,14 @@ func _try_ranged_attack() -> void:
 
 
 func _apply_ranged_cooldown(slot: String) -> void:
+	var speed_mult := 1.0
+	if _upgrade_applier:
+		speed_mult = _upgrade_applier.get_multiplier("attack_speed")
 	match slot:
 		"left":
-			_left_cooldown = left_weapon.attack_cooldown
+			_left_cooldown = left_weapon.attack_cooldown * speed_mult
 		"right":
-			_right_cooldown = right_weapon.attack_cooldown
+			_right_cooldown = right_weapon.attack_cooldown * speed_mult
 
 
 func _spawn_bullet(weapon: WeaponData, direction: Vector2, damage: int) -> void:

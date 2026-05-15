@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="UpgradeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/upgrade_data.gd" id="1_up"]
+
+[resource]
+script = ExtResource("1_up")
+id = "damage_aura"
+display_name = "伤害光环"
+description = "每秒对周围敌人造成 5 点伤害"
+rarity = 1
+tags = Array[String](["melee", "offense", "aoe"])
+max_stacks = 5
+target_stat = "damage_aura"
+modifier_type = 0
+value = 5.0

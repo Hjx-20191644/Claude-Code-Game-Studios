@@ -52,6 +52,7 @@ func _ready() -> void:
 	EventBus.enemy_killed.connect(_on_enemy_killed)
 	EventBus.player_died.connect(_on_player_died)
 	EventBus.wave_started.connect(_on_wave_started)
+	EventBus.vfx_requested.connect(_on_vfx_requested)
 
 
 # --- Hit particles ---
@@ -231,6 +232,14 @@ func _find_player() -> Player:
 	if players.size() > 0:
 		return players[0] as Player
 	return null
+
+
+func _on_vfx_requested(effect_name: String, position: Vector2) -> void:
+	if _is_dead:
+		return
+	match effect_name:
+		"explosion":
+			_emit_burst(position, 20, Color(1.0, 0.5, 0.0), 100.0, 250.0, 0.5, 10.0)
 
 
 func _find_camera() -> Camera2D:

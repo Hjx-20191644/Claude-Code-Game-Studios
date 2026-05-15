@@ -27,6 +27,9 @@ signal dodge_cooldown_changed(remaining: float)
 signal score_changed(new_score: int)
 signal stats_updated
 
+# --- VFX ---
+signal vfx_requested(effect_name: String, position: Vector2)
+
 # --- Player Status ---
 signal health_changed(new_health: float, max_health: float)
 signal weapon_changed(weapon_data: Dictionary)

@@ -7,6 +7,9 @@
 wave_number = 1
 melee_count = 3
 ranged_count = 0
+charger_count = 0
+exploder_count = 0
+tank_count = 0
 spawn_delay = 0.5
 has_upgrade_window = false
 
@@ -14,28 +17,90 @@ has_upgrade_window = false
 wave_number = 2
 melee_count = 4
 ranged_count = 1
+charger_count = 0
+exploder_count = 0
+tank_count = 0
 spawn_delay = 0.5
-has_upgrade_window = false
+has_upgrade_window = true
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w3"]
 wave_number = 3
 melee_count = 4
 ranged_count = 2
-spawn_delay = 0.4
-has_upgrade_window = true
-
-[sub_resource type="Resource" script=ExtResource("2_entry") id="w4"]
-wave_number = 4
-melee_count = 5
-ranged_count = 3
+charger_count = 1
+exploder_count = 0
+tank_count = 0
 spawn_delay = 0.4
 has_upgrade_window = false
 
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w4"]
+wave_number = 4
+melee_count = 4
+ranged_count = 2
+charger_count = 1
+exploder_count = 1
+tank_count = 0
+spawn_delay = 0.4
+has_upgrade_window = true
+
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w5"]
 wave_number = 5
+melee_count = 5
+ranged_count = 3
+charger_count = 1
+exploder_count = 1
+tank_count = 0
+spawn_delay = 0.4
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w6"]
+wave_number = 6
+melee_count = 5
+ranged_count = 3
+charger_count = 1
+exploder_count = 1
+tank_count = 0
+spawn_delay = 0.3
+has_upgrade_window = true
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w7"]
+wave_number = 7
+melee_count = 5
+ranged_count = 3
+charger_count = 2
+exploder_count = 0
+tank_count = 1
+spawn_delay = 0.3
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w8"]
+wave_number = 8
 melee_count = 6
 ranged_count = 4
+charger_count = 2
+exploder_count = 1
+tank_count = 0
 spawn_delay = 0.3
+has_upgrade_window = true
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w9"]
+wave_number = 9
+melee_count = 6
+ranged_count = 4
+charger_count = 2
+exploder_count = 0
+tank_count = 1
+spawn_delay = 0.25
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w10"]
+wave_number = 10
+melee_count = 7
+ranged_count = 5
+charger_count = 2
+exploder_count = 2
+tank_count = 0
+spawn_delay = 0.25
 has_upgrade_window = true
 
 [resource]
@@ -45,4 +110,4 @@ upgrade_interval = 2
 upgrade_timeout = 30.0
 infinite_melee_increment = 2
 infinite_ranged_increment = 1
-waves = Array[Resource]([SubResource("w1"), SubResource("w2"), SubResource("w3"), SubResource("w4"), SubResource("w5")])
+waves = Array[Resource]([SubResource("w1"), SubResource("w2"), SubResource("w3"), SubResource("w4"), SubResource("w5"), SubResource("w6"), SubResource("w7"), SubResource("w8"), SubResource("w9"), SubResource("w10")])

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/enemy_data.gd" id="1_enemy"]
+
+[resource]
+script = ExtResource("1_enemy")
+enemy_name = "自爆者"
+enemy_type = "exploder"
+max_hp = 20
+move_speed = 250.0
+contact_damage = 0
+contact_damage_interval = 0.5
+knockback_speed = 400.0
+contact_radius = 20.0
+flank_speed = 200.0
+flank_distance = 100.0
+charge_speed = 500.0
+charge_duration = 0.5
