@@ -14,6 +14,7 @@ var _dodge_direction: Vector2 = Vector2.ZERO
 @onready var player: Player = _find_player()
 @onready var input_buffer: Node = $"../InputBuffer"
 var _upgrade_applier: UpgradeApplier
+var _meta_cooldown_reduction: float = 0.0
 
 
 func _ready() -> void:
@@ -22,8 +23,12 @@ func _ready() -> void:
 	input_buffer.dodge_pressed.connect(_on_dodge_pressed)
 
 
+func add_meta_cooldown_reduction(amount: float) -> void:
+	_meta_cooldown_reduction += amount
+
+
 func _effective_cooldown() -> float:
-	var base := GameConfig.DODGE_COOLDOWN
+	var base := GameConfig.DODGE_COOLDOWN - _meta_cooldown_reduction
 	if _upgrade_applier:
 		base += _upgrade_applier.get_absolute("dodge_cooldown")
 	return maxf(0.1, base)

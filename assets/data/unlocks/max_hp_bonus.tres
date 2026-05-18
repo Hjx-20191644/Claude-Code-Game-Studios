@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MetaUnlockData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/meta_unlock_data.gd" id="1_meta"]
+
+[resource]
+script = ExtResource("1_meta")
+id = "max_hp_bonus"
+display_name = "生命强化"
+description = "每局开始时最大生命 +25"
+cost = 100
+prerequisites = Array[String]([])
+unlock_type = "stat_bonus"
+target_stat = "max_hp"
+value = 25.0

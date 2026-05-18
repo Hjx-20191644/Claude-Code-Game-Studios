@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MetaUnlockData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/meta_unlock_data.gd" id="1_meta"]
+
+[resource]
+script = ExtResource("1_meta")
+id = "starting_shards"
+display_name = "初始资金"
+description = "每局开始时获得 10 碎片"
+cost = 300
+prerequisites = Array[String](["unlock_crossbow"])
+unlock_type = "starting_bonus"
+target_stat = "starting_shards"
+value = 10.0

@@ -49,18 +49,18 @@ func test_ac3_wave_cleared_on_all_killed() -> void:
 	assert_signal_emitted(EventBus, "wave_completed")
 
 
-# --- AC-4: Wave 3 has upgrade window ---
+# --- AC-4: Wave 2 has upgrade window (even-wave upgrade schedule) ---
 
-func test_ac4_wave_3_has_upgrade() -> void:
+func test_ac4_wave_2_has_upgrade() -> void:
 	var data: WaveData = WaveData.create_default()
-	assert_true(data.waves[2].has_upgrade_window, "Wave 3 should have upgrade")
+	assert_true(data.waves[1].has_upgrade_window, "Wave 2 should have upgrade")
 
 
-# --- AC-5: Wave 2 has no upgrade ---
+# --- AC-5: Wave 3 has no upgrade ---
 
-func test_ac5_wave_2_no_upgrade() -> void:
+func test_ac5_wave_3_no_upgrade() -> void:
 	var data: WaveData = WaveData.create_default()
-	assert_false(data.waves[1].has_upgrade_window, "Wave 2 should not have upgrade")
+	assert_false(data.waves[2].has_upgrade_window, "Wave 3 should not have upgrade")
 
 
 # --- AC-6: upgrade_completed() allows next wave ---
@@ -89,13 +89,13 @@ func test_ac8_player_died_emits_run_ended() -> void:
 	assert_signal_emitted(EventBus, "run_ended")
 
 
-# --- AC-9: Wave 6 infinite mode — melee=8, ranged=5 ---
+# --- AC-9: Wave 11 (first infinite wave) — melee=7+2=9, ranged=5+1=6 ---
 
-func test_ac9_wave_6_infinite_counts() -> void:
-	var cfg: WaveConfig = _wm._get_wave_config(6)
-	assert_eq(cfg.wave_number, 6)
-	assert_eq(cfg.melee_count, 8)
-	assert_eq(cfg.ranged_count, 5)
+func test_ac9_wave_11_infinite_counts() -> void:
+	var cfg: WaveConfig = _wm._get_wave_config(11)
+	assert_eq(cfg.wave_number, 11)
+	assert_eq(cfg.melee_count, 9)
+	assert_eq(cfg.ranged_count, 6)
 
 
 # --- AC-10: start_run() mid-run resets to wave 1 ---
@@ -119,14 +119,14 @@ func test_get_current_wave_before_start() -> void:
 	assert_eq(_wm.get_current_wave(), 0)
 
 
-# --- Extra: Infinite upgrade formula ---
+# --- Extra: Infinite upgrade formula (only applies to waves beyond config) ---
 
 func test_infinite_upgrade_formula() -> void:
-	# (wave-1)%2==0 for infinite mode with interval=2
-	var cfg6: WaveConfig = _wm._get_wave_config(6)
-	assert_false(cfg6.has_upgrade_window, "Wave 6: (6-1)%2=1, no upgrade")
-	var cfg7: WaveConfig = _wm._get_wave_config(7)
-	assert_true(cfg7.has_upgrade_window, "Wave 7: (7-1)%2=0, upgrade")
+	# upgrade_interval=2: (wave-1)%2==0 → upgrades on odd post-config waves (11, 13, 15...)
+	var cfg11: WaveConfig = _wm._get_wave_config(11)
+	assert_true(cfg11.has_upgrade_window, "Wave 11: (11-1)%2=0, upgrade")
+	var cfg12: WaveConfig = _wm._get_wave_config(12)
+	assert_false(cfg12.has_upgrade_window, "Wave 12: (12-1)%2=1, no upgrade")
 
 
 # --- Extra: Wave completion respects min duration ---

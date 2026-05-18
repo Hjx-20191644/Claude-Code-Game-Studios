@@ -42,6 +42,9 @@ func _start_run() -> void:
 	_upgrade_pool.reset()
 	if _combat_system:
 		_combat_system.reset_ammo()
+	var shard_mgr := $Systems.get_node_or_null("ShardManager")
+	if shard_mgr:
+		shard_mgr.clear_run_shards()
 	_wave_manager.start_run()
 
 

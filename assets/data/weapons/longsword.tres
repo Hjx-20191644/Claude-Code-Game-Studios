@@ -6,7 +6,7 @@
 script = ExtResource("1_weapon")
 weapon_name = "长剑"
 weapon_type = "melee"
-base_damage = 15
+base_damage = 20
 attack_cooldown = 0.5
 melee_angle = 90.0
 melee_radius = 70.0

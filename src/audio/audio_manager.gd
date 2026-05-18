@@ -15,6 +15,10 @@ func _ready() -> void:
 	EventBus.wave_started.connect(_on_wave_started)
 	EventBus.upgrade_window_requested.connect(_on_upgrade_window)
 	EventBus.dodge_started.connect(_on_dodge)
+	EventBus.shard_collected.connect(_on_shard_collected)
+	EventBus.item_unlocked.connect(_on_item_unlocked)
+	EventBus.item_purchase_failed.connect(_on_item_purchase_failed)
+	EventBus.run_completed.connect(_on_run_completed)
 
 
 func _on_damage_dealt(_amount: float, _pos: Vector2, attack_type: String) -> void:
@@ -28,8 +32,16 @@ func _on_damage_taken(_amount: float, _pos: Vector2) -> void:
 	_play_noise(0.08)
 
 
-func _on_enemy_killed(_kill_type: String, _pos: Vector2, _color: Color, _is_elite: bool = false) -> void:
-	_play_sweep(400.0, 100.0, 0.15)
+func _on_enemy_killed(kill_type: String, _pos: Vector2, _color: Color, _is_elite: bool = false) -> void:
+	match kill_type:
+		"charger":
+			_play_sweep(200.0, 50.0, 0.18)
+		"exploder":
+			_play_burst(0.2)
+		"tank":
+			_play_sweep(80.0, 30.0, 0.3)
+		_:
+			_play_sweep(400.0, 100.0, 0.15)
 
 
 func _on_wave_started(wave_number: int) -> void:
@@ -46,12 +58,28 @@ func _on_dodge() -> void:
 	_play_sweep(200.0, 400.0, 0.06)
 
 
+func _on_shard_collected(_amount: int, _total: int) -> void:
+	_play_ping(1200.0, 0.04)
+
+
+func _on_item_unlocked(_unlock_id: String) -> void:
+	_play_two_tone(600.0, 1000.0, 0.07, 0.1)
+
+
+func _on_item_purchase_failed(_unlock_id: String, _reason: String) -> void:
+	_play_buzz(0.08)
+
+
+func _on_run_completed(_stats: RunStats, _shards_earned: int) -> void:
+	_play_two_tone(400.0, 200.0, 0.15, 0.2)
+
+
 # --- Generators ---
 
 func _play_tone(freq: float, duration: float, shape: String) -> void:
 	var count := int(RATE * duration)
 	var data := PackedByteArray()
-	data.resize(count * 2)  # 16-bit mono
+	data.resize(count * 2)
 	for i in count:
 		var t := float(i) / RATE
 		var env := 1.0 - (float(i) / float(count))
@@ -103,6 +131,45 @@ func _play_noise(duration: float) -> void:
 	for i in count:
 		var env := 1.0 - (float(i) / float(count))
 		var v := (randf() * 2.0 - 1.0) * 0.15 * env * env
+		var sample := int(clampf(v * 32767.0, -32768, 32767))
+		data.encode_s16(i * 2, sample)
+	_emit(data, count)
+
+
+func _play_ping(freq: float, duration: float) -> void:
+	var count := int(RATE * duration)
+	var data := PackedByteArray()
+	data.resize(count * 2)
+	for i in count:
+		var ratio := float(i) / float(count)
+		var env := 1.0 - ratio
+		var v := sin(TAU * freq * ratio) * 0.2 * env * env
+		var sample := int(clampf(v * 32767.0, -32768, 32767))
+		data.encode_s16(i * 2, sample)
+	_emit(data, count)
+
+
+func _play_burst(duration: float) -> void:
+	var count := int(RATE * duration)
+	var data := PackedByteArray()
+	data.resize(count * 2)
+	for i in count:
+		var ratio := float(i) / float(count)
+		var env := 1.0 - ratio
+		var v := (randf() * 2.0 - 1.0) * 0.35 * env * env
+		var sample := int(clampf(v * 32767.0, -32768, 32767))
+		data.encode_s16(i * 2, sample)
+	_emit(data, count)
+
+
+func _play_buzz(duration: float) -> void:
+	var count := int(RATE * duration)
+	var data := PackedByteArray()
+	data.resize(count * 2)
+	for i in count:
+		var t := float(i) / RATE
+		var env := 1.0 - (float(i) / float(count))
+		var v := sin(TAU * 80.0 * t) * 0.2 * env * env
 		var sample := int(clampf(v * 32767.0, -32768, 32767))
 		data.encode_s16(i * 2, sample)
 	_emit(data, count)

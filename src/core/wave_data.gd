@@ -28,9 +28,9 @@ static func create_default() -> WaveData:
 		_make_wave(3, 4, 2, 1, 0, 0, 0.4, false),
 		_make_wave(4, 4, 2, 1, 1, 0, 0.4, true),
 		_make_wave(5, 5, 3, 1, 1, 0, 0.4, false),
-		_make_wave(6, 5, 3, 1, 1, 0, 0.3, true),
+		_make_wave(6, 6, 3, 1, 1, 0, 0.3, true),
 		_make_wave(7, 5, 3, 2, 0, 1, 0.3, false),
-		_make_wave(8, 6, 4, 2, 1, 0, 0.3, true),
+		_make_wave(8, 7, 5, 2, 1, 0, 0.3, true),
 		_make_wave(9, 6, 4, 2, 0, 1, 0.25, false),
 		_make_wave(10, 7, 5, 2, 2, 0, 0.25, true),
 	]

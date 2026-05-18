@@ -30,6 +30,14 @@ signal stats_updated
 # --- VFX ---
 signal vfx_requested(effect_name: String, position: Vector2)
 
+# --- Shards / Meta-progression ---
+signal shard_collected(amount: int, total: int)
+signal shards_changed(new_total: int)
+signal item_unlocked(unlock_id: String)
+signal item_purchase_failed(unlock_id: String, reason: String)
+signal run_completed(stats: RunStats, shards_earned: int)
+signal profile_loaded
+
 # --- Player Status ---
 signal health_changed(new_health: float, max_health: float)
 signal weapon_changed(weapon_data: Dictionary)

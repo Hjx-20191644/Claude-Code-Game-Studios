@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3]
+[gd_scene load_steps=23 format=3]
 
 [ext_resource type="Script" path="res://src/gameplay/main.gd" id="12"]
 [ext_resource type="Script" path="res://src/core/input_buffer.gd" id="1"]
@@ -16,6 +16,8 @@
 [ext_resource type="Script" path="res://src/ui/pause_menu.gd" id="14"]
 [ext_resource type="Script" path="res://src/audio/audio_manager.gd" id="15"]
 [ext_resource type="Script" path="res://src/gameplay/upgrade_applier.gd" id="16"]
+[ext_resource type="Script" path="res://src/gameplay/shard_manager.gd" id="17"]
+[ext_resource type="Script" path="res://src/gameplay/meta_upgrade_applier.gd" id="18"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_top"]
 size = Vector2(1000, 10)
@@ -132,6 +134,12 @@ script = ExtResource("16")
 
 [node name="AudioManager" type="Node" parent="Systems"]
 script = ExtResource("15")
+
+[node name="ShardManager" type="Node" parent="Systems"]
+script = ExtResource("17")
+
+[node name="MetaUpgradeApplier" type="Node" parent="Systems"]
+script = ExtResource("18")
 
 [node name="PauseMenu" type="Control" parent="UI"]
 script = ExtResource("14")

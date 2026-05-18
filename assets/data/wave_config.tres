@@ -55,7 +55,7 @@ has_upgrade_window = false
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w6"]
 wave_number = 6
-melee_count = 5
+melee_count = 6
 ranged_count = 3
 charger_count = 1
 exploder_count = 1
@@ -75,8 +75,8 @@ has_upgrade_window = false
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w8"]
 wave_number = 8
-melee_count = 6
-ranged_count = 4
+melee_count = 7
+ranged_count = 5
 charger_count = 2
 exploder_count = 1
 tank_count = 0

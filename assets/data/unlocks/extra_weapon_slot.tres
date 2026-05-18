@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MetaUnlockData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/meta_unlock_data.gd" id="1_meta"]
+
+[resource]
+script = ExtResource("1_meta")
+id = "extra_weapon_slot"
+display_name = "武器大师"
+description = "每局开始时可多选一个武器"
+cost = 250
+prerequisites = Array[String](["max_hp_bonus"])
+unlock_type = "stat_bonus"
+target_stat = "extra_weapon_choice"
+value = 1.0

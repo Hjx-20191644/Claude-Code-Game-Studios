@@ -20,6 +20,7 @@ var _dodge_dot: ColorRect
 var _score_label: Label
 var _wave_label: Label
 var _kills_label: Label
+var _shard_label: Label
 var _wave_announce: Label
 
 var _combat_system: Node
@@ -51,6 +52,7 @@ func _ready() -> void:
 	EventBus.wave_started.connect(_on_wave_started)
 	EventBus.player_died.connect(_on_player_died)
 	EventBus.wave_completed.connect(_on_wave_completed)
+	EventBus.shard_collected.connect(_on_shard_collected)
 
 
 func _process(_delta: float) -> void:
@@ -181,6 +183,15 @@ func _build_score_labels() -> void:
 	_kills_label.position = Vector2(hud_margin, hud_margin + 48)
 	add_child(_kills_label)
 
+	# Shards
+	_shard_label = Label.new()
+	_shard_label.text = "Shards: 0"
+	_shard_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_shard_label.add_theme_font_size_override("font_size", 14)
+	_shard_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 0.8))
+	_shard_label.position = Vector2(hud_margin, hud_margin + 68)
+	add_child(_shard_label)
+
 
 func _on_score_changed(new_score: int) -> void:
 	_score_label.text = str(new_score)
@@ -198,6 +209,10 @@ func _on_wave_started(wave_number: int) -> void:
 func _on_wave_completed(_wave_number: int) -> void:
 	if _score_manager:
 		_kills_label.text = "Kills: %d" % _score_manager.get_total_kills()
+
+
+func _on_shard_collected(_amount: int, run_total: int) -> void:
+	_shard_label.text = "Shards: %d" % run_total
 
 
 func _on_player_died() -> void:

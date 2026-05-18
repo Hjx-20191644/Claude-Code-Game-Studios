@@ -1,27 +1,36 @@
 extends Control
 class_name MainMenu
 
-## Main menu screen: game title, Start Game → weapon select, Leaderboard, Settings, Quit.
+## Main menu screen: game title, Start Game → weapon select, Meta Upgrades, Leaderboard, Settings, Quit.
 
 var _leaderboard_ui: LeaderboardUI
 var _settings_ui: SettingsUI
 var _weapon_select_ui: WeaponSelectUI
+var _unlock_tree_panel: UnlockTreePanel
 var _main_panel: VBoxContainer
+var _shard_label: Label
 
 
 func _ready() -> void:
 	_leaderboard_ui = get_node_or_null("LeaderboardUI") as LeaderboardUI
 	_settings_ui = get_node_or_null("SettingsUI") as SettingsUI
 	_weapon_select_ui = get_node_or_null("WeaponSelectUI") as WeaponSelectUI
+	_unlock_tree_panel = get_node_or_null("UnlockTreePanel") as UnlockTreePanel
 	SettingsManager.apply_window_mode()
 	_build_ui()
-	# Move overlay panels to top of draw order
+
+	if _unlock_tree_panel:
+		move_child(_unlock_tree_panel, get_child_count() - 1)
+		_unlock_tree_panel._on_back_callback = func(): _main_panel.show()
 	if _leaderboard_ui:
 		move_child(_leaderboard_ui, get_child_count() - 1)
 	if _settings_ui:
 		move_child(_settings_ui, get_child_count() - 1)
 	if _weapon_select_ui:
 		move_child(_weapon_select_ui, get_child_count() - 1)
+
+	EventBus.shards_changed.connect(_on_shards_changed)
+	EventBus.profile_loaded.connect(_on_shards_changed)
 
 
 func _build_ui() -> void:
@@ -30,7 +39,6 @@ func _build_ui() -> void:
 	anchor_top = 0.0
 	anchor_bottom = 1.0
 
-	# Background
 	var bg := ColorRect.new()
 	bg.color = Color(0.08, 0.08, 0.12)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -43,7 +51,6 @@ func _build_ui() -> void:
 	var panel := VBoxContainer.new()
 	panel.add_theme_constant_override("separation", 24)
 
-	# Title
 	var title := Label.new()
 	title.text = "Hunting Ground"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -62,11 +69,13 @@ func _build_ui() -> void:
 	spacer.custom_minimum_size = Vector2(0, 60)
 	panel.add_child(spacer)
 
-	# Buttons
 	_main_panel = panel
 
 	var start_btn := _make_button("Start Game", _on_start)
 	panel.add_child(start_btn)
+
+	var upgrade_btn := _make_button("Meta Upgrades", _on_upgrades)
+	panel.add_child(upgrade_btn)
 
 	var lb_btn := _make_button("Leaderboard", _on_leaderboard)
 	panel.add_child(lb_btn)
@@ -74,10 +83,26 @@ func _build_ui() -> void:
 	var settings_btn := _make_button("Settings", _on_settings)
 	panel.add_child(settings_btn)
 
+	# Shard display at bottom
+	var spacer2 := Control.new()
+	spacer2.custom_minimum_size = Vector2(0, 40)
+	panel.add_child(spacer2)
+
+	_shard_label = Label.new()
+	_shard_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_shard_label.add_theme_font_size_override("font_size", 18)
+	_shard_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 0.85))
+	_shard_label.text = "Shards: %d" % MetaProgress.get_shards()
+	panel.add_child(_shard_label)
+
 	var quit_btn := _make_button("Quit", _on_quit)
 	panel.add_child(quit_btn)
 
 	center.add_child(panel)
+
+
+func _on_shards_changed(_total: int = 0) -> void:
+	_shard_label.text = "Shards: %d" % MetaProgress.get_shards()
 
 
 func _on_start() -> void:
@@ -86,6 +111,12 @@ func _on_start() -> void:
 		_weapon_select_ui._on_start_callback = _start_game
 		_main_panel.hide()
 		_weapon_select_ui.show_panel()
+
+
+func _on_upgrades() -> void:
+	if _unlock_tree_panel:
+		_main_panel.hide()
+		_unlock_tree_panel.show_panel()
 
 
 func _start_game() -> void:

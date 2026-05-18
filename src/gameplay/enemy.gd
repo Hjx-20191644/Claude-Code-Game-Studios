@@ -94,7 +94,7 @@ func _ready() -> void:
 	_spawn_timer = 0.3
 
 	if _is_charger:
-		_c_cooldown_timer = randf_range(1.0, 3.0)
+		_c_cooldown_timer = randf_range(3.0, 5.0)
 
 
 func _physics_process(delta: float) -> void:
@@ -285,12 +285,12 @@ func _enter_charger(new_state: ChargerState) -> void:
 			if not enemy_data.is_elite:
 				sprite.scale = Vector2(1.5, 0.7)
 		ChargerState.STUN:
-			_c_prep_timer = 0.8
+			_c_prep_timer = 1.2
 			if not enemy_data.is_elite:
 				sprite.scale = Vector2(0.8, 0.8)
 			sprite.color = Color(0.6, 0.15, 0.07)
 		ChargerState.TRACKING:
-			_c_cooldown_timer = randf_range(2.0, 4.0)
+			_c_cooldown_timer = randf_range(4.0, 7.0)
 			if not enemy_data.is_elite:
 				sprite.scale = Vector2(1.0, 1.0)
 			sprite.visible = true

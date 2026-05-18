@@ -6,7 +6,7 @@
 script = ExtResource("1_weapon")
 weapon_name = "冲锋枪"
 weapon_type = "ranged"
-base_damage = 8
+base_damage = 6
 attack_cooldown = 0.12
 melee_angle = 0.0
 melee_radius = 0.0
@@ -14,5 +14,5 @@ knockback_mult = 0.5
 bullet_speed = 350.0
 max_range = 250.0
 scatter_degrees = 10.0
-bullet_count = 2
+bullet_count = 1
 max_ammo = 25

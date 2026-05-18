@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MetaUnlockData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/meta_unlock_data.gd" id="1_meta"]
+
+[resource]
+script = ExtResource("1_meta")
+id = "unlock_rifle"
+display_name = "步枪解锁"
+description = "解锁武器：步枪 — 远距离高精度狙击"
+cost = 300
+prerequisites = Array[String](["unlock_crossbow"])
+unlock_type = "weapon"
+target_stat = "weapon_rifle"
+value = 1.0

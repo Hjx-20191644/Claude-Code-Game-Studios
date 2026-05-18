@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MetaUnlockData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/meta_unlock_data.gd" id="1_meta"]
+
+[resource]
+script = ExtResource("1_meta")
+id = "unlock_crossbow"
+display_name = "弩解锁"
+description = "解锁武器：弩 — 穿透敌人的远程武器"
+cost = 200
+prerequisites = Array[String](["dodge_cd_down"])
+unlock_type = "weapon"
+target_stat = "weapon_crossbow"
+value = 1.0

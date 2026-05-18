@@ -17,6 +17,7 @@ var _left_ammo: int = 0
 var _right_ammo: int = 0
 var _left_ammo_timer: float = 0.0
 var _right_ammo_timer: float = 0.0
+var _meta_ammo_regen_mult: float = 1.0
 
 # Attack mode (mutual exclusivity: first pressed wins)
 enum AttackMode { NONE, MELEE, RANGED }
@@ -51,7 +52,7 @@ func _physics_process(delta: float) -> void:
 
 	_update_aim_direction()
 	_update_cooldowns(delta)
-	_update_ammo(delta)
+	# unlimited ammo
 	_check_continuous_attack()
 
 
@@ -87,24 +88,35 @@ func reset_ammo() -> void:
 	_right_cooldown = 0.0
 
 
-func get_ammo_display() -> String:
-	var parts: Array[String] = []
-	if left_weapon and left_weapon.weapon_type == "ranged":
-		parts.append(str(_left_ammo))
-	if right_weapon and right_weapon.weapon_type == "ranged":
-		parts.append(str(_right_ammo))
-	if parts.is_empty():
-		return "∞"
-	return " ".join(PackedStringArray(parts))
+	return "∞"
 
+
+var _nearest_enemy_dist: float = INF
 
 func _update_aim_direction() -> void:
-	var mouse_pos := get_viewport().get_camera_2d().get_global_mouse_position()
-	var dir := mouse_pos - player.global_position
-	if dir.length() > 1.0:
-		dir = dir.normalized()
-		player.aim_direction = dir
+	var nearest := _find_nearest_enemy()
+	if nearest:
+		var dir := nearest.global_position - player.global_position
+		_nearest_enemy_dist = dir.length()
+		if _nearest_enemy_dist > 1.0:
+			player.aim_direction = dir.normalized()
+	else:
+		_nearest_enemy_dist = INF
 	player.facing_direction = player.aim_direction
+
+
+func _find_nearest_enemy() -> Node2D:
+	var closest: Node2D = null
+	var closest_dist: float = INF
+	for child in _arena_enemies.get_children():
+		if not child.has_method("take_damage"):
+			continue
+		var enemy := child as Node2D
+		var dist := player.global_position.distance_squared_to(enemy.global_position)
+		if dist < closest_dist:
+			closest_dist = dist
+			closest = enemy
+	return closest
 
 
 func _update_cooldowns(delta: float) -> void:
@@ -115,35 +127,60 @@ func _update_cooldowns(delta: float) -> void:
 func _update_ammo(delta: float) -> void:
 	if left_weapon and left_weapon.max_ammo > 0 and _left_ammo < _get_max_ammo(left_weapon.max_ammo):
 		_left_ammo_timer += delta
-		if _left_ammo_timer >= GameConfig.RANGED_AMMO_REGEN_RATE:
+		var regen_rate: float = GameConfig.RANGED_AMMO_REGEN_RATE / _meta_ammo_regen_mult
+		if _left_ammo_timer >= regen_rate:
 			_left_ammo = mini(_get_max_ammo(left_weapon.max_ammo), _left_ammo + 1)
-			_left_ammo_timer -= GameConfig.RANGED_AMMO_REGEN_RATE
+			_left_ammo_timer -= regen_rate
 
 	if right_weapon and right_weapon.max_ammo > 0 and _right_ammo < _get_max_ammo(right_weapon.max_ammo):
 		_right_ammo_timer += delta
-		if _right_ammo_timer >= GameConfig.RANGED_AMMO_REGEN_RATE:
+		var regen_rate_r: float = GameConfig.RANGED_AMMO_REGEN_RATE / _meta_ammo_regen_mult
+		if _right_ammo_timer >= regen_rate_r:
 			_right_ammo = mini(_get_max_ammo(right_weapon.max_ammo), _right_ammo + 1)
-			_right_ammo_timer -= GameConfig.RANGED_AMMO_REGEN_RATE
+			_right_ammo_timer -= regen_rate_r
 
+
+const MELEE_PRE_FIRE_MULT: float = 1.6
 
 func _check_continuous_attack() -> void:
-	match _attack_mode:
-		AttackMode.MELEE:
-			if Input.is_action_pressed("melee_attack"):
-				_try_melee_attack()
-			else:
-				_attack_mode = AttackMode.NONE
-				if Input.is_action_pressed("ranged_attack"):
-					_attack_mode = AttackMode.RANGED
-					_try_ranged_attack()
-		AttackMode.RANGED:
-			if Input.is_action_pressed("ranged_attack"):
-				_try_ranged_attack()
-			else:
-				_attack_mode = AttackMode.NONE
-				if Input.is_action_pressed("melee_attack"):
-					_attack_mode = AttackMode.MELEE
-					_try_melee_attack()
+	if _nearest_enemy_dist >= INF * 0.5:
+		return
+
+	# Melee: pre-fire when enemy is within 1.6x weapon range (anticipation)
+	if _can_melee_attack() and _nearest_enemy_dist <= _max_melee_range() * MELEE_PRE_FIRE_MULT:
+		_try_melee_attack()
+
+	# Ranged: fire when enemy within max range
+	if _can_ranged_attack() and _nearest_enemy_dist <= _max_ranged_range():
+		_try_ranged_attack()
+
+
+func _can_melee_attack() -> bool:
+	return (left_weapon and left_weapon.weapon_type == "melee" and _left_cooldown <= 0.0) or \
+	       (right_weapon and right_weapon.weapon_type == "melee" and _right_cooldown <= 0.0)
+
+
+func _can_ranged_attack() -> bool:
+	return (left_weapon and left_weapon.weapon_type == "ranged" and _left_cooldown <= 0.0) or \
+	       (right_weapon and right_weapon.weapon_type == "ranged" and _right_cooldown <= 0.0)
+
+
+func _max_melee_range() -> float:
+	var r: float = 0.0
+	if left_weapon and left_weapon.weapon_type == "melee":
+		r = maxf(r, left_weapon.melee_radius)
+	if right_weapon and right_weapon.weapon_type == "melee":
+		r = maxf(r, right_weapon.melee_radius)
+	return r
+
+
+func _max_ranged_range() -> float:
+	var r: float = 0.0
+	if left_weapon and left_weapon.weapon_type == "ranged":
+		r = maxf(r, left_weapon.max_range)
+	if right_weapon and right_weapon.weapon_type == "ranged":
+		r = maxf(r, right_weapon.max_range)
+	return r
 
 
 # --- Input signals ---
@@ -249,10 +286,10 @@ func _try_ranged_attack() -> void:
 	var ranged_weapons: Array[WeaponData] = []
 	var slots: Array[String] = []
 
-	if left_weapon and left_weapon.weapon_type == "ranged" and _left_cooldown <= 0.0 and _left_ammo > 0:
+	if left_weapon and left_weapon.weapon_type == "ranged" and _left_cooldown <= 0.0 :
 		ranged_weapons.append(left_weapon)
 		slots.append("left")
-	if right_weapon and right_weapon.weapon_type == "ranged" and _right_cooldown <= 0.0 and _right_ammo > 0:
+	if right_weapon and right_weapon.weapon_type == "ranged" and _right_cooldown <= 0.0 :
 		ranged_weapons.append(right_weapon)
 		slots.append("right")
 
@@ -282,7 +319,7 @@ func _try_ranged_attack() -> void:
 			dmg = int(float(dmg) * _get_ranged_damage_mult())
 			_spawn_bullet(weapon, bullet_dir, dmg)
 
-		_consume_ammo(slots[i])
+		# unlimited ammo
 
 	if is_dual:
 		var speed_mult := 1.0
