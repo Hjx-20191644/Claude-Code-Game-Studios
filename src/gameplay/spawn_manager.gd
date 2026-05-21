@@ -19,6 +19,7 @@ var _type_data_map := {
 	"charger": "charger",
 	"exploder": "exploder",
 	"tank": "tank",
+	"boss": "warlord",
 }
 
 @onready var _player: Player = _find_player()
@@ -43,6 +44,15 @@ func spawn_enemies(enemy_type: String, count: int, wave_number: int = 1, spawn_d
 	var data := GameConfig.get_enemy_data(data_id)
 	if not data:
 		push_warning("SpawnManager: enemy data not found for type '%s'" % enemy_type)
+		return
+
+	# Boss: spawn at arena center with intro delay, no elite
+	if enemy_type == "boss":
+		var center := _get_arena_rect().get_center()
+		await get_tree().create_timer(0.8).timeout  # intro anticipation
+		_spawn_one(center, data, wave_number, false)
+		# boss_spawned is emitted by enemy._ready() with scaled HP
+		EventBus.wave_spawn_complete.emit(count, enemy_type)
 		return
 
 	var elite_wave := wave_number > 0 and wave_number % 5 == 0
@@ -85,14 +95,16 @@ func _spawn_one(pos: Vector2, data: EnemyData, wave_number: int, is_elite: bool 
 	var scaled := data.duplicate() as EnemyData
 	var waves_elapsed := maxi(0, wave_number - 1)
 
-	# HP scaling: melee +10%/wave, ranged +5%/wave
-	if data.enemy_type == "melee":
+	# Boss: reduced scaling (3% HP/wave, +2 dmg/wave)
+	if data.enemy_type == "boss":
+		scaled.max_hp = int(data.max_hp * (1.0 + 0.03 * waves_elapsed))
+		scaled.contact_damage = data.contact_damage + waves_elapsed * 2
+	elif data.enemy_type == "melee":
 		scaled.max_hp = int(data.max_hp * (1.0 + 0.1 * waves_elapsed))
+		scaled.contact_damage = data.contact_damage + waves_elapsed
 	else:
 		scaled.max_hp = int(data.max_hp * (1.0 + 0.05 * waves_elapsed))
-
-	# Damage scaling: +1 per wave
-	scaled.contact_damage = data.contact_damage + waves_elapsed
+		scaled.contact_damage = data.contact_damage + waves_elapsed
 
 	# Elite: bonus damage multiplier on top of wave scaling
 	if is_elite:

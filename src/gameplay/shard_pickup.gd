@@ -1,4 +1,6 @@
 extends Area2D
+const PA = preload("res://src/visuals/pixel_art.gd")
+const ST = preload("res://src/visuals/sprite_templates.gd")
 ## Single shard pickup: floats toward the player and auto-collects.
 
 var value: int = 1
@@ -18,10 +20,10 @@ func _ready() -> void:
 	shape.shape.radius = _collect_radius
 	add_child(shape)
 
-	var sprite := ColorRect.new()
-	sprite.size = Vector2(6, 6)
-	sprite.position = Vector2(-3, -3)
-	sprite.color = Color(0.2, 0.9, 1.0)  # cyan
+	var sprite := Sprite2D.new()
+	sprite.centered = true
+	sprite.texture = PA.generate_sprite(8, 8, ST.shard_sprite)
+	sprite.self_modulate = Color(0.2, 0.9, 1.0)  # cyan
 	add_child(sprite)
 
 

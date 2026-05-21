@@ -5,6 +5,16 @@ class_name VfxParticle
 ## Modulate color controls the visible color (draw_rect uses WHITE for tinting).
 
 var _size: float = 4.0
+var _texture: Texture2D = null
+
+static var _pixel_dot: ImageTexture = null
+
+static func _get_pixel_dot() -> ImageTexture:
+	if not _pixel_dot:
+		var img := Image.create(4, 4, false, Image.FORMAT_RGBA8)
+		img.fill(Color.WHITE)
+		_pixel_dot = ImageTexture.create_from_image(img)
+	return _pixel_dot
 
 
 func _ready() -> void:
@@ -12,8 +22,12 @@ func _ready() -> void:
 
 
 func _draw() -> void:
-	var half := _size / 2.0
-	draw_rect(Rect2(-half, -half, _size, _size), Color.WHITE)
+	if _texture:
+		var half := _size / 2.0
+		draw_texture_rect(_texture, Rect2(-half, -half, _size, _size), false, Color.WHITE)
+	else:
+		var half := _size / 2.0
+		draw_rect(Rect2(-half, -half, _size, _size), Color.WHITE)
 
 
 func set_draw_size(s: float) -> void:
@@ -31,3 +45,8 @@ func play(lifetime: float, velocity: Vector2, size: float = 4.0) -> void:
 	tw.tween_property(self, "scale", Vector2(0.3, 0.3), lifetime)
 	await tw.finished
 	queue_free()
+
+
+func set_texture(tex: Texture2D) -> void:
+	_texture = tex
+	queue_redraw()

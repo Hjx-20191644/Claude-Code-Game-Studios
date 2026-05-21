@@ -83,7 +83,7 @@ func _on_damage_taken(_amount: float, _position: Vector2) -> void:
 func _player_flash() -> void:
 	if not _player:
 		return
-	var sprite := _player.get_node_or_null("Sprite") as ColorRect
+	var sprite := _player.get_node_or_null("Sprite") as Sprite2D
 	if not sprite:
 		return
 
@@ -131,15 +131,16 @@ func _show_vignette() -> void:
 func _on_dodge_started() -> void:
 	if _is_dead or not _player:
 		return
-	var sprite := _player.get_node_or_null("Sprite") as ColorRect
+	var sprite := _player.get_node_or_null("Sprite") as Sprite2D
 	if not sprite:
 		return
 
 	var ghost := VfxParticle.new()
 	var world_pos := _player.global_position + sprite.position
 	ghost.position = world_pos
-	var c := sprite.color
+	var c := sprite.self_modulate
 	ghost.modulate = Color(c.r, c.g, minf(c.b + 0.2, 1.0), afterimage_alpha)
+	ghost.set_texture(sprite.texture)
 	ghost.set_draw_size(24.0)
 	_effects_2d.add_child(ghost)
 	ghost.play(afterimage_lifetime, Vector2.ZERO, 24.0)

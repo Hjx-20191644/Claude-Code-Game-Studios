@@ -40,8 +40,6 @@ func _start_run() -> void:
 	_player.health.reset()
 	_player.health.set_invincible(1.0)  # 1s spawn protection
 	_upgrade_pool.reset()
-	if _combat_system:
-		_combat_system.reset_ammo()
 	var shard_mgr := $Systems.get_node_or_null("ShardManager")
 	if shard_mgr:
 		shard_mgr.clear_run_shards()

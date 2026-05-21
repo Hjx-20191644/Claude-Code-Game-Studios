@@ -218,10 +218,10 @@ func _make_tag_chip(tag: String) -> Control:
 	var container := PanelContainer.new()
 	var style := StyleBoxFlat.new()
 	style.bg_color = _tag_color(tag)
-	style.corner_radius_top_left = 4
-	style.corner_radius_top_right = 4
-	style.corner_radius_bottom_left = 4
-	style.corner_radius_bottom_right = 4
+	style.corner_radius_top_left = 0
+	style.corner_radius_top_right = 0
+	style.corner_radius_bottom_left = 0
+	style.corner_radius_bottom_right = 0
 	style.content_margin_left = 6
 	style.content_margin_right = 6
 	style.content_margin_top = 1
@@ -250,7 +250,6 @@ func _highlight_card(index: int) -> void:
 	for i in _card_panels.size():
 		var panel := _card_panels[i]
 		var tw: Tween = create_tween()
-		tw.set_paused(false)
 		if i == index:
 			tw.tween_property(panel, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.15)
 			tw.parallel().tween_property(panel, "scale", Vector2(1.04, 1.04), 0.15)
@@ -277,7 +276,6 @@ func _animate_cards_enter() -> void:
 	for i in _card_panels.size():
 		var panel := _card_panels[i]
 		var tw: Tween = create_tween()
-		tw.set_paused(false)
 		var delay := i * 0.08
 		tw.tween_property(panel, "position:y", 0.0, slide_in_duration).set_ease(Tween.EASE_OUT).set_delay(delay)
 		tw.parallel().tween_property(panel, "modulate:a", 1.0, slide_in_duration).set_ease(Tween.EASE_OUT).set_delay(delay)
@@ -292,7 +290,6 @@ func _animate_card_selected(index: int) -> void:
 	for i in _card_panels.size():
 		var panel := _card_panels[i]
 		var tw: Tween = create_tween()
-		tw.set_paused(false)
 		if i == index:
 			tw.tween_property(panel, "scale", Vector2(1.12, 1.12), select_anim_duration * 0.4)
 			tw.tween_property(panel, "scale", Vector2(1.05, 1.05), select_anim_duration * 0.6)
@@ -392,10 +389,10 @@ func _make_card_style(rarity: int) -> StyleBoxFlat:
 	style.bg_color = Color(0.06, 0.06, 0.10, 0.94)
 	style.shadow_color = _rarity_color(rarity)
 	style.shadow_size = 6 if rarity >= UpgradeData.Rarity.RARE else 2
-	style.corner_radius_top_left = 10
-	style.corner_radius_top_right = 10
-	style.corner_radius_bottom_left = 10
-	style.corner_radius_bottom_right = 10
+	style.corner_radius_top_left = 0
+	style.corner_radius_top_right = 0
+	style.corner_radius_bottom_left = 0
+	style.corner_radius_bottom_right = 0
 	style.content_margin_left = 14
 	style.content_margin_right = 14
 	style.content_margin_top = 14

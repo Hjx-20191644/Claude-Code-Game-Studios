@@ -38,6 +38,12 @@ signal item_purchase_failed(unlock_id: String, reason: String)
 signal run_completed(stats: RunStats, shards_earned: int)
 signal profile_loaded
 
+# --- Boss ---
+signal boss_spawned(boss_name: String, max_hp: int)
+signal boss_phase_changed(phase: int)
+signal boss_killed(boss_name: String)
+signal boss_damaged(current_hp: int, max_hp: int)
+
 # --- Player Status ---
 signal health_changed(new_health: float, max_health: float)
 signal weapon_changed(weapon_data: Dictionary)

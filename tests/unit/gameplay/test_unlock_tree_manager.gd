@@ -21,7 +21,7 @@ func before_each() -> void:
 
 func test_ac1_all_unlocks_loaded() -> void:
 	var all: Array = _utm.get_all_unlocks()
-	assert_eq(all.size(), 8)
+	assert_eq(all.size(), 7)
 
 
 # --- AC-2: can_purchase true when affordable and prereqs met ---
@@ -42,7 +42,7 @@ func test_ac3_cannot_purchase_without_shards() -> void:
 
 func test_ac4_cannot_purchase_without_prereq() -> void:
 	MetaProgress.add_shards(500)
-	assert_false(_utm.can_purchase("ammo_regen_up"), "ammo_regen_up requires max_hp_bonus")
+	assert_false(_utm.can_purchase("dodge_cd_down"), "dodge_cd_down requires max_hp_bonus")
 
 
 # --- AC-5: can_purchase false when already unlocked ---
@@ -87,7 +87,7 @@ func test_ac8b_block_reason_insufficient_shards() -> void:
 
 func test_ac8c_block_reason_prereq_missing() -> void:
 	MetaProgress.add_shards(500)
-	var reason: String = _utm.get_purchase_block_reason("ammo_regen_up")
+	var reason: String = _utm.get_purchase_block_reason("dodge_cd_down")
 	assert_true(reason.contains("prerequisite_missing"), "Expected prereq missing, got: %s" % reason)
 
 
@@ -107,11 +107,11 @@ func test_ac10_two_level_prereq_chain() -> void:
 	# Level 1
 	assert_true(_utm.purchase("max_hp_bonus"))
 	# Level 2
-	assert_true(_utm.can_purchase("ammo_regen_up"))
-	assert_true(_utm.purchase("ammo_regen_up"))
-	# Level 3 requires ammo_regen_up
-	assert_true(_utm.can_purchase("unlock_longsword"))
-	assert_true(_utm.purchase("unlock_longsword"))
+	assert_true(_utm.can_purchase("dodge_cd_down"))
+	assert_true(_utm.purchase("dodge_cd_down"))
+	# Level 3 requires dodge_cd_down
+	assert_true(_utm.can_purchase("unlock_crossbow"))
+	assert_true(_utm.purchase("unlock_crossbow"))
 
 
 # --- Extra: invalid id returns null ---

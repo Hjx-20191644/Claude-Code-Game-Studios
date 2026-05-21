@@ -31,10 +31,16 @@ class_name EnemyData
 @export var elite_hp_mult: float = 5.0
 @export var elite_damage_mult: float = 2.0
 @export var elite_score_bonus: int = 500
+# Boss
+@export var boss_scale: float = 3.0
+@export var phase_threshold: float = 0.5
+@export var slam_damage: int = 30
+@export var slam_radius: float = 120.0
+@export var slam_windup: float = 0.5
 
 
 func validate() -> void:
-	assert(enemy_type in ["melee", "ranged", "charger", "exploder", "tank"], "EnemyData: unknown enemy_type '%s'" % enemy_type)
+	assert(enemy_type in ["melee", "ranged", "charger", "exploder", "tank", "boss"], "EnemyData: unknown enemy_type '%s'" % enemy_type)
 	assert(max_hp >= 1, "EnemyData: max_hp must be >= 1")
 	assert(move_speed >= 50.0, "EnemyData: move_speed must be >= 50")
 	assert(contact_damage >= 0, "EnemyData: contact_damage must be >= 0")

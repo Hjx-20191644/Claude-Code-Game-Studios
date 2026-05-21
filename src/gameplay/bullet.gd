@@ -1,5 +1,7 @@
 extends Area2D
 class_name Bullet
+const PA = preload("res://src/visuals/pixel_art.gd")
+const ST = preload("res://src/visuals/sprite_templates.gd")
 
 ## Projectile fired by ranged weapons. Moves in a straight line,
 ## hits enemies via body_entered, self-destructs at max_range.
@@ -21,6 +23,9 @@ var _hit_bodies: Array[Node] = []  # Track pierced-through enemies
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
+	var sprite: Sprite2D = $Sprite
+	sprite.texture = PA.generate_sprite(8, 8, ST.bullet_sprite)
+	sprite.self_modulate = Color(1.0, 0.8, 0.2)
 
 
 func _physics_process(delta: float) -> void:

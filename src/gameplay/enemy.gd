@@ -1,5 +1,7 @@
 extends CharacterBody2D
 class_name Enemy
+const PA = preload("res://src/visuals/pixel_art.gd")
+const ST = preload("res://src/visuals/sprite_templates.gd")
 
 ## Enemy with multi-type AI: melee (flank-and-charge), ranged (keep-distance + shoot),
 ## charger (periodic dash + stun), exploder (rush + AoE blast), tank (slow + front shield).
@@ -9,11 +11,13 @@ enum MeleeState { SPAWN, FLANKING, CHARGING }
 enum RangedState { SPAWN, APPROACH, SHOOTING, EVADING }
 enum ChargerState { SPAWN, TRACKING, CHARGE_PREP, CHARGING, STUN }
 enum ExploderState { SPAWN, RUSHING, WARNING, EXPLODING }
+enum BossState { SPAWN, TRACKING, CHARGE_WINDUP, CHARGING, STUN, SLAM_WINDUP, SLAM }
+enum BossPhase { PHASE_1, PHASE_2 }
 
 @export var enemy_data: EnemyData
 
 @onready var health: HealthComponent = $HealthComponent
-@onready var sprite: ColorRect = $Sprite
+@onready var sprite: Sprite2D = $Sprite
 
 var _player: Player
 var _contact_timer: float = -0.3
@@ -47,6 +51,15 @@ var _c_cooldown_timer: float = 0.0
 var _e_state: ExploderState = ExploderState.SPAWN
 var _e_warning_timer: float = 0.0
 
+# Boss
+var _is_boss: bool = false
+var _boss_state: BossState = BossState.SPAWN
+var _boss_phase: BossPhase = BossPhase.PHASE_1
+var _boss_cooldown: float = 0.0
+var _boss_timer: float = 0.0
+var _boss_charge_dir: Vector2 = Vector2.ZERO
+var _boss_has_slammed: bool = false
+
 # Knockback (overrides FSM)
 var _is_knocked_back: bool = false
 var _knockback_velocity: Vector2 = Vector2.ZERO
@@ -69,24 +82,43 @@ func _ready() -> void:
 		_is_charger = enemy_data.enemy_type == "charger"
 		_is_exploder = enemy_data.enemy_type == "exploder"
 		_is_tank = enemy_data.enemy_type == "tank"
+		_is_boss = enemy_data.enemy_type == "boss"
+
+		# Generate pixel art sprite based on type
+		if _is_boss:
+			sprite.texture = PA.generate_sprite(72, 72, ST.enemy_boss_sprite)
+		elif _is_tank:
+			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_tank_sprite)
+		elif _is_exploder:
+			sprite.texture = PA.generate_sprite(24, 24, ST.enemy_exploder_sprite)
+		elif _is_charger:
+			sprite.texture = PA.generate_sprite(24, 24, ST.enemy_charger_sprite)
+		elif _is_ranged:
+			sprite.texture = PA.generate_sprite(24, 24, ST.enemy_ranged_sprite)
+		else:
+			sprite.texture = PA.generate_sprite(24, 24, ST.enemy_melee_sprite)
 
 		if enemy_data.is_elite:
 			sprite.scale = Vector2(enemy_data.elite_scale, enemy_data.elite_scale)
-			sprite.color = Color(1.0, 0.84, 0.0)
+			sprite.self_modulate = Color(1.0, 0.84, 0.0)
 			health.is_elite = true
 			health.max_hp = int(health.max_hp * enemy_data.elite_hp_mult)
 			health.current_hp = health.max_hp
 		elif _is_ranged:
-			sprite.color = Color(0.8, 0.4, 0.2)
+			sprite.self_modulate = Color(0.8, 0.4, 0.2)
 		elif _is_charger:
-			sprite.color = Color(0.9, 0.2, 0.1)
+			sprite.self_modulate = Color(0.9, 0.2, 0.1)
 		elif _is_exploder:
-			sprite.color = Color(1.0, 0.5, 0.0)
+			sprite.self_modulate = Color(1.0, 0.5, 0.0)
 		elif _is_tank:
-			sprite.color = Color(0.4, 0.4, 0.5)
+			sprite.self_modulate = Color(0.4, 0.4, 0.5)
 			sprite.scale = Vector2(2.0, 2.0)
+		elif _is_boss:
+			var bs := enemy_data.boss_scale
+			sprite.scale = Vector2(bs, bs)
+			sprite.self_modulate = Color(0.7, 0.15, 0.1)
 		else:
-			sprite.color = Color(0.3, 0.7, 1.0)
+			sprite.self_modulate = Color(0.3, 0.7, 1.0)
 
 	health.died.connect(_on_death)
 	_find_player()
@@ -95,6 +127,11 @@ func _ready() -> void:
 
 	if _is_charger:
 		_c_cooldown_timer = randf_range(3.0, 5.0)
+
+	if _is_boss:
+		_boss_cooldown = randf_range(3.0, 5.0)
+		EventBus.boss_spawned.emit(enemy_data.enemy_name, health.max_hp)
+		EventBus.boss_damaged.emit(health.current_hp, health.max_hp)
 
 
 func _physics_process(delta: float) -> void:
@@ -105,7 +142,9 @@ func _physics_process(delta: float) -> void:
 		_process_knockback(delta)
 		return
 
-	if _is_exploder:
+	if _is_boss:
+		_process_boss(delta)
+	elif _is_exploder:
 		_process_exploder(delta)
 	elif _is_charger:
 		_process_charger(delta)
@@ -130,7 +169,22 @@ func take_damage(amount: int, damage_type: String, source: Node, knockback_value
 
 	var result := health.take_damage(amount, damage_type, source, knockback_value)
 
-	if _is_charger and knockback_value > 0.0 and health.is_alive() and not _is_knocked_back:
+	# Boss phase transition
+	if _is_boss and health.is_alive():
+		EventBus.boss_damaged.emit(health.current_hp, health.max_hp)
+		if _boss_phase == BossPhase.PHASE_1:
+			var hp_ratio := float(health.current_hp) / float(health.max_hp)
+			var threshold := enemy_data.phase_threshold if enemy_data else 0.5
+			if hp_ratio <= threshold:
+				_boss_phase = BossPhase.PHASE_2
+				_boss_has_slammed = false
+				_boss_cooldown = 0.3
+				EventBus.boss_phase_changed.emit(2)
+				sprite.self_modulate = Color(1.0, 0.2, 0.05)
+
+	if _is_boss and knockback_value > 0.0 and health.is_alive() and not _is_knocked_back:
+		_start_knockback(source.global_position, knockback_value * 0.25)
+	elif _is_charger and knockback_value > 0.0 and health.is_alive() and not _is_knocked_back:
 		_start_knockback(source.global_position, knockback_value * 0.5)
 	elif knockback_value > 0.0 and health.is_alive() and not _is_knocked_back:
 		_start_knockback(source.global_position, knockback_value)
@@ -288,13 +342,13 @@ func _enter_charger(new_state: ChargerState) -> void:
 			_c_prep_timer = 1.2
 			if not enemy_data.is_elite:
 				sprite.scale = Vector2(0.8, 0.8)
-			sprite.color = Color(0.6, 0.15, 0.07)
+			sprite.self_modulate = Color(0.6, 0.15, 0.07)
 		ChargerState.TRACKING:
 			_c_cooldown_timer = randf_range(4.0, 7.0)
 			if not enemy_data.is_elite:
 				sprite.scale = Vector2(1.0, 1.0)
 			sprite.visible = true
-			sprite.color = Color(0.9, 0.2, 0.1)
+			sprite.self_modulate = Color(0.9, 0.2, 0.1)
 		ChargerState.SPAWN:
 			pass
 
@@ -332,13 +386,13 @@ func _enter_exploder(new_state: ExploderState) -> void:
 	match new_state:
 		ExploderState.WARNING:
 			_e_warning_timer = 0.35
-			sprite.color = Color(2.0, 2.0, 2.0)
+			sprite.self_modulate = Color(2.0, 2.0, 2.0)
 		ExploderState.EXPLODING:
 			_explode(80.0, 25)
 			queue_free()
 		ExploderState.RUSHING:
 			sprite.visible = true
-			sprite.color = Color(1.0, 0.5, 0.0)
+			sprite.self_modulate = Color(1.0, 0.5, 0.0)
 
 
 # --- Explosion ---
@@ -391,7 +445,9 @@ func _process_knockback(delta: float) -> void:
 	if _knockback_timer >= _knockback_duration:
 		_is_knocked_back = false
 		if health.is_alive():
-			if _is_exploder:
+			if _is_boss:
+				_enter_boss(BossState.TRACKING)
+			elif _is_exploder:
 				_enter_exploder(ExploderState.RUSHING)
 			elif _is_charger:
 				_enter_charger(ChargerState.TRACKING)
@@ -422,6 +478,8 @@ func _check_contact_damage(delta: float) -> void:
 # --- Death ---
 
 func _on_death() -> void:
+	if _is_boss:
+		EventBus.boss_killed.emit(enemy_data.enemy_name if enemy_data else "Boss")
 	if _is_exploder:
 		_explode(80.0, 25)
 	# Kill explosion upgrade
@@ -431,6 +489,110 @@ func _on_death() -> void:
 		if kill_dmg > 0.0:
 			_explode(80.0, int(kill_dmg))
 	queue_free()
+
+
+# --- Boss AI ---
+
+func _process_boss(delta: float) -> void:
+	match _boss_state:
+		BossState.SPAWN:
+			_spawn_timer -= delta
+			if _spawn_timer <= 0.0:
+				_enter_boss(BossState.TRACKING)
+
+		BossState.TRACKING:
+			_boss_cooldown -= delta
+			if _boss_cooldown <= 0.0:
+				if _boss_phase == BossPhase.PHASE_2 and not _boss_has_slammed and randf() < 0.4:
+					_enter_boss(BossState.SLAM_WINDUP)
+				else:
+					_enter_boss(BossState.CHARGE_WINDUP)
+			else:
+				var dir := (_player.global_position - global_position).normalized()
+				var speed := _ed("move_speed", 120.0)
+				if _boss_phase == BossPhase.PHASE_2:
+					speed *= 1.3
+				velocity = dir * speed
+				move_and_slide()
+
+		BossState.CHARGE_WINDUP:
+			_boss_timer -= delta
+			var pulse := 1.0 + sin(_boss_timer * 18.0) * 0.2
+			sprite.scale = Vector2(enemy_data.boss_scale * pulse, enemy_data.boss_scale * pulse)
+			velocity = Vector2.ZERO
+			if _boss_timer <= 0.0:
+				_enter_boss(BossState.CHARGING)
+
+		BossState.CHARGING:
+			_boss_timer -= delta
+			velocity = _boss_charge_dir * _ed("charge_speed", 600.0)
+			move_and_slide()
+			if _boss_timer <= 0.0:
+				_enter_boss(BossState.STUN)
+
+		BossState.STUN:
+			_boss_timer -= delta
+			velocity = Vector2.ZERO
+			sprite.visible = fmod(_boss_timer * 10.0, 1.0) > 0.3
+			if _boss_timer <= 0.0:
+				_boss_has_slammed = false
+				_enter_boss(BossState.TRACKING)
+
+		BossState.SLAM_WINDUP:
+			_boss_timer -= delta
+			var pulse := 1.0 + sin(_boss_timer * 15.0) * 0.35
+			sprite.scale = Vector2(enemy_data.boss_scale * pulse, enemy_data.boss_scale * pulse)
+			sprite.self_modulate = Color(2.0, 2.0, 2.0)
+			velocity = Vector2.ZERO
+			if _boss_timer <= 0.0:
+				_enter_boss(BossState.SLAM)
+
+		BossState.SLAM:
+			var sw := _ed("slam_windup", 0.5)
+			if sw > 0.0:
+				_explode(_ed("slam_radius", 120.0), int(_ed("slam_damage", 30)))
+			EventBus.vfx_requested.emit("explosion", global_position)
+			_boss_has_slammed = true
+			_enter_boss(BossState.STUN)
+
+
+func _enter_boss(new_state: BossState) -> void:
+	_boss_state = new_state
+	match new_state:
+		BossState.TRACKING:
+			_boss_cooldown = randf_range(3.0, 5.0)
+			if _boss_phase == BossPhase.PHASE_2:
+				_boss_cooldown *= 0.7
+			sprite.visible = true
+			var bs := enemy_data.boss_scale if enemy_data else 3.0
+			sprite.scale = Vector2(bs, bs)
+			if _boss_phase == BossPhase.PHASE_1:
+				sprite.self_modulate = Color(0.7, 0.15, 0.1)
+			else:
+				sprite.self_modulate = Color(1.0, 0.2, 0.05)
+
+		BossState.CHARGE_WINDUP:
+			_boss_timer = 0.4
+			_boss_charge_dir = (_player.global_position - global_position).normalized()
+
+		BossState.CHARGING:
+			_boss_timer = _ed("charge_duration", 0.6)
+			var bs := enemy_data.boss_scale if enemy_data else 3.0
+			sprite.scale = Vector2(bs * 1.5, bs * 0.7)
+
+		BossState.STUN:
+			_boss_timer = 0.8
+			sprite.scale = Vector2(enemy_data.boss_scale * 0.9, enemy_data.boss_scale * 0.9) if enemy_data else Vector2(2.7, 2.7)
+			sprite.self_modulate = Color(0.5, 0.1, 0.07)
+
+		BossState.SLAM_WINDUP:
+			_boss_timer = _ed("slam_windup", 0.5)
+
+		BossState.SLAM:
+			pass
+
+		BossState.SPAWN:
+			pass
 
 
 func _find_player() -> void:

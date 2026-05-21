@@ -38,6 +38,7 @@ func _ready() -> void:
 	EventBus.enemy_killed.connect(_on_enemy_killed)
 	EventBus.wave_spawn_complete.connect(_on_wave_spawn_complete)
 	EventBus.player_died.connect(_on_player_died)
+	EventBus.boss_killed.connect(_on_boss_killed)
 
 
 func _physics_process(delta: float) -> void:
@@ -86,6 +87,8 @@ func _advance_to_next_wave() -> void:
 		_pending_spawn_batches += 1
 	if config.tank_count > 0:
 		_pending_spawn_batches += 1
+	if config.boss_count > 0:
+		_pending_spawn_batches += 1
 
 	_state = State.WAVE_ACTIVE
 	_wave_start_ticks = Time.get_ticks_msec()
@@ -97,6 +100,7 @@ func _advance_to_next_wave() -> void:
 		_spawn_manager.spawn_enemies("charger", config.charger_count, _current_wave)
 		_spawn_manager.spawn_enemies("exploder", config.exploder_count, _current_wave)
 		_spawn_manager.spawn_enemies("tank", config.tank_count, _current_wave)
+		_spawn_manager.spawn_enemies("boss", config.boss_count, _current_wave)
 	else:
 		_all_spawned = true
 		_check_wave_complete()
@@ -152,6 +156,13 @@ func _on_player_died() -> void:
 	EventBus.run_ended.emit()
 
 
+func _on_boss_killed(_boss_name: String) -> void:
+	if _state != State.WAVE_ACTIVE:
+		return
+	# Boss death completes the wave immediately (ignore remaining adds)
+	_on_wave_cleared()
+
+
 # --- Helpers ---
 
 const MIN_WAVE_DURATION_MSEC: int = 50
@@ -185,6 +196,9 @@ func _get_wave_config(wave: int) -> WaveConfig:
 	config.tank_count = last.tank_count + maxi(0, loop_count - 1)
 	config.spawn_delay = last.spawn_delay
 	config.has_upgrade_window = (wave - 1) % _wave_data.upgrade_interval == 0
+	# Boss every 5 waves after wave 10 (waves 15, 20, 25...)
+	if wave > 10 and wave % 5 == 0:
+		config.boss_count = 1
 	return config
 
 

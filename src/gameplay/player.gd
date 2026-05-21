@@ -1,5 +1,7 @@
 extends CharacterBody2D
 class_name Player
+const PA = preload("res://src/visuals/pixel_art.gd")
+const ST = preload("res://src/visuals/sprite_templates.gd")
 
 ## Player character: movement + aim direction.
 ## Combat and dodge are separate systems that read from / override this node.
@@ -14,13 +16,15 @@ var base_speed: float = GameConfig.PLAYER_BASE_SPEED
 var is_dodging: bool = false
 var dodge_override_velocity: Vector2 = Vector2.ZERO
 
-@onready var sprite: ColorRect = $Sprite
+@onready var sprite: Sprite2D = $Sprite
 var _upgrade_applier: UpgradeApplier
 
 
 func _ready() -> void:
 	add_to_group("players")
 	_upgrade_applier = get_node("/root/Main/Systems/UpgradeApplier") as UpgradeApplier
+	sprite.texture = PA.generate_sprite(24, 24, ST.player_sprite)
+	sprite.self_modulate = Color(0.3, 0.7, 1.0)
 
 
 var _aura_timer: float = 0.0

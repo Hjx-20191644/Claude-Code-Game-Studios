@@ -94,8 +94,8 @@ func test_ac8_player_died_emits_run_ended() -> void:
 func test_ac9_wave_11_infinite_counts() -> void:
 	var cfg: WaveConfig = _wm._get_wave_config(11)
 	assert_eq(cfg.wave_number, 11)
-	assert_eq(cfg.melee_count, 9)
-	assert_eq(cfg.ranged_count, 6)
+	assert_eq(cfg.melee_count, 6)  # last wave 10 has 4 melee + 2 increment
+	assert_eq(cfg.ranged_count, 4)  # last wave 10 has 3 ranged + 1 increment
 
 
 # --- AC-10: start_run() mid-run resets to wave 1 ---
@@ -139,6 +139,56 @@ func test_wave_min_duration_guard() -> void:
 	# The min duration (300ms) hasn't passed yet in headless mode
 	# Just verify no crash
 	pass_test("min duration guard does not crash")
+
+
+# --- AC-11: Wave 5 has boss_count = 1 ---
+
+func test_wave_5_has_boss() -> void:
+	var data: WaveData = WaveData.create_default()
+	var cfg: WaveConfig = data.waves[4]  # wave 5 is index 4
+	assert_eq(cfg.boss_count, 1, "Wave 5 should have boss_count = 1")
+
+
+# --- AC-12: Wave 10 has boss_count = 1 ---
+
+func test_wave_10_has_boss() -> void:
+	var data: WaveData = WaveData.create_default()
+	var cfg: WaveConfig = data.waves[9]  # wave 10 is index 9
+	assert_eq(cfg.boss_count, 1, "Wave 10 should have boss_count = 1")
+
+
+# --- AC-13: boss_killed completes wave ---
+
+func test_boss_killed_completes_wave() -> void:
+	_wm.start_run()
+	await wait_seconds(0.1)
+	# Simulate normal spawn + boss wave
+	EventBus.wave_spawn_complete.emit(3, "melee")
+	EventBus.wave_spawn_complete.emit(1, "boss")
+	# Killing boss should complete the wave immediately
+	EventBus.boss_killed.emit("军阀")
+	assert_signal_emitted(EventBus, "wave_completed")
+
+
+# --- AC-14: Wave 15 (infinite) has boss (15%5==0) ---
+
+func test_wave_15_infinite_has_boss() -> void:
+	var cfg: WaveConfig = _wm._get_wave_config(15)
+	assert_eq(cfg.boss_count, 1, "Wave 15 (15%%5==0) should have boss")
+
+
+# --- AC-15: Wave 16 (infinite) has no boss ---
+
+func test_wave_16_infinite_no_boss() -> void:
+	var cfg: WaveConfig = _wm._get_wave_config(16)
+	assert_eq(cfg.boss_count, 0, "Wave 16 (16%%5!=0) should not have boss")
+
+
+# --- AC-16: Wave 12 (infinite, not boss wave) no boss ---
+
+func test_wave_12_no_boss_before_15() -> void:
+	var cfg: WaveConfig = _wm._get_wave_config(12)
+	assert_eq(cfg.boss_count, 0, "Wave 12 should not have boss (first infinite boss at 15)")
 
 
 func pass_test(_msg: String = "") -> void:

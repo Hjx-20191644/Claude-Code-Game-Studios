@@ -10,5 +10,6 @@ class_name WaveConfig
 @export var charger_count: int = 0
 @export var exploder_count: int = 0
 @export var tank_count: int = 0
+@export var boss_count: int = 0
 @export var spawn_delay: float = 0.5
 @export var has_upgrade_window: bool = false

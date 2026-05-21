@@ -83,3 +83,7 @@ pause={
 2d_physics/layer_6="EnemyHitbox"
 2d_physics/layer_7="EnemyDetection"
 2d_physics/layer_8="Walls"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0

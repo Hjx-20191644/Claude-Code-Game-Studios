@@ -45,13 +45,14 @@ has_upgrade_window = true
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w5"]
 wave_number = 5
-melee_count = 5
-ranged_count = 3
+melee_count = 3
+ranged_count = 2
 charger_count = 1
-exploder_count = 1
+exploder_count = 0
 tank_count = 0
+boss_count = 1
 spawn_delay = 0.4
-has_upgrade_window = false
+has_upgrade_window = true
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w6"]
 wave_number = 6
@@ -95,11 +96,12 @@ has_upgrade_window = false
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w10"]
 wave_number = 10
-melee_count = 7
-ranged_count = 5
-charger_count = 2
-exploder_count = 2
-tank_count = 0
+melee_count = 4
+ranged_count = 3
+charger_count = 1
+exploder_count = 1
+tank_count = 1
+boss_count = 1
 spawn_delay = 0.25
 has_upgrade_window = true
 

@@ -12,12 +12,6 @@ var right_weapon: WeaponData
 var _left_cooldown: float = 0.0
 var _right_cooldown: float = 0.0
 
-# Per-weapon ammo
-var _left_ammo: int = 0
-var _right_ammo: int = 0
-var _left_ammo_timer: float = 0.0
-var _right_ammo_timer: float = 0.0
-var _meta_ammo_regen_mult: float = 1.0
 
 # Attack mode (mutual exclusivity: first pressed wins)
 enum AttackMode { NONE, MELEE, RANGED }
@@ -39,7 +33,6 @@ var _arena_enemies: Node2D
 
 func _ready() -> void:
 	_load_default_weapons()
-	_init_ammo()
 	_upgrade_applier = get_node("../UpgradeApplier") as UpgradeApplier
 	_arena_enemies = get_node("../../Arena/Enemies")
 	input_buffer.melee_attack_pressed.connect(_on_melee_pressed)
@@ -66,29 +59,6 @@ func _find_player() -> Player:
 func _load_default_weapons() -> void:
 	left_weapon = GameConfig.get_weapon_data(WeaponSelection.left_weapon_id)
 	right_weapon = GameConfig.get_weapon_data(WeaponSelection.right_weapon_id)
-
-
-func _get_max_ammo(base: int) -> int:
-	var bonus := 0
-	if _upgrade_applier:
-		bonus = int(_upgrade_applier.get_absolute("max_ammo"))
-	return base + bonus
-
-
-func _init_ammo() -> void:
-	if left_weapon and left_weapon.max_ammo > 0:
-		_left_ammo = _get_max_ammo(left_weapon.max_ammo)
-	if right_weapon and right_weapon.max_ammo > 0:
-		_right_ammo = _get_max_ammo(right_weapon.max_ammo)
-
-
-func reset_ammo() -> void:
-	_init_ammo()
-	_left_cooldown = 0.0
-	_right_cooldown = 0.0
-
-
-	return "∞"
 
 
 var _nearest_enemy_dist: float = INF
@@ -123,23 +93,6 @@ func _update_cooldowns(delta: float) -> void:
 	_left_cooldown = maxf(0.0, _left_cooldown - delta)
 	_right_cooldown = maxf(0.0, _right_cooldown - delta)
 
-
-func _update_ammo(delta: float) -> void:
-	if left_weapon and left_weapon.max_ammo > 0 and _left_ammo < _get_max_ammo(left_weapon.max_ammo):
-		_left_ammo_timer += delta
-		var regen_rate: float = GameConfig.RANGED_AMMO_REGEN_RATE / _meta_ammo_regen_mult
-		if _left_ammo_timer >= regen_rate:
-			_left_ammo = mini(_get_max_ammo(left_weapon.max_ammo), _left_ammo + 1)
-			_left_ammo_timer -= regen_rate
-
-	if right_weapon and right_weapon.max_ammo > 0 and _right_ammo < _get_max_ammo(right_weapon.max_ammo):
-		_right_ammo_timer += delta
-		var regen_rate_r: float = GameConfig.RANGED_AMMO_REGEN_RATE / _meta_ammo_regen_mult
-		if _right_ammo_timer >= regen_rate_r:
-			_right_ammo = mini(_get_max_ammo(right_weapon.max_ammo), _right_ammo + 1)
-			_right_ammo_timer -= regen_rate_r
-
-
 const MELEE_PRE_FIRE_MULT: float = 1.6
 
 func _check_continuous_attack() -> void:
@@ -157,12 +110,12 @@ func _check_continuous_attack() -> void:
 
 func _can_melee_attack() -> bool:
 	return (left_weapon and left_weapon.weapon_type == "melee" and _left_cooldown <= 0.0) or \
-	       (right_weapon and right_weapon.weapon_type == "melee" and _right_cooldown <= 0.0)
+		   (right_weapon and right_weapon.weapon_type == "melee" and _right_cooldown <= 0.0)
 
 
 func _can_ranged_attack() -> bool:
 	return (left_weapon and left_weapon.weapon_type == "ranged" and _left_cooldown <= 0.0) or \
-	       (right_weapon and right_weapon.weapon_type == "ranged" and _right_cooldown <= 0.0)
+		   (right_weapon and right_weapon.weapon_type == "ranged" and _right_cooldown <= 0.0)
 
 
 func _max_melee_range() -> float:
@@ -357,16 +310,6 @@ func _spawn_bullet(weapon: WeaponData, direction: Vector2, damage: int) -> void:
 	bullet.explosive_radius = weapon.explosive_radius
 	bullet.collision_mask = 2 + 128  # Enemies + Walls
 	get_node("../../Arena/Effects").add_child(bullet)
-
-
-func _consume_ammo(slot: String) -> void:
-	match slot:
-		"left":
-			_left_ammo = maxi(0, _left_ammo - 1)
-			_left_ammo_timer = 0.0
-		"right":
-			_right_ammo = maxi(0, _right_ammo - 1)
-			_right_ammo_timer = 0.0
 
 
 func _flash_player_melee() -> void:

@@ -40,10 +40,6 @@ func _apply_single(ul: Resource) -> void:
 				hc.max_hp += int(ul.value)
 				EventBus.health_changed.emit(hc.current_hp, hc.max_hp)
 
-		"ammo_regen_rate":
-			var cs := _find_node_in_systems("CombatSystem")
-			if cs:
-				cs._meta_ammo_regen_mult += ul.value
 
 		"dodge_cooldown":
 			var ds := _find_node_in_systems("DodgeSystem")

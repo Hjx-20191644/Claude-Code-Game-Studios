@@ -8,10 +8,12 @@ class_name UpgradePool
 
 var _all_upgrades: Array[UpgradeData] = []
 var _acquired: Dictionary = {}  # upgrade_id -> current_stacks
+var _combat_system: Node  # for weapon-type tag filtering
 
 
 func _ready() -> void:
 	_load_all_upgrades()
+	_combat_system = get_node("../CombatSystem")
 
 
 func _load_all_upgrades() -> void:
@@ -92,11 +94,26 @@ func reset() -> void:
 
 func _get_available() -> Array[UpgradeData]:
 	var available: Array[UpgradeData] = []
+	var has_melee := _has_weapon_type("melee")
+	var has_ranged := _has_weapon_type("ranged")
+
 	for upgrade in _all_upgrades:
 		var stacks: int = _acquired.get(upgrade.id, 0)
-		if upgrade.max_stacks == -1 or stacks < upgrade.max_stacks:
-			available.append(upgrade)
+		if upgrade.max_stacks != -1 and stacks >= upgrade.max_stacks:
+			continue
+		if not has_melee and "melee" in upgrade.tags:
+			continue
+		if not has_ranged and "ranged" in upgrade.tags:
+			continue
+		available.append(upgrade)
 	return available
+
+
+func _has_weapon_type(type_name: String) -> bool:
+	if not _combat_system:
+		return true  # fallback: show all if can't determine
+	return (_combat_system.left_weapon and _combat_system.left_weapon.weapon_type == type_name) or \
+		   (_combat_system.right_weapon and _combat_system.right_weapon.weapon_type == type_name)
 
 
 func _weighted_random(pool: Array[UpgradeData]) -> UpgradeData:
