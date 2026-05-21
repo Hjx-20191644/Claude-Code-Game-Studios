@@ -46,6 +46,11 @@ func _physics_process(delta: float) -> void:
 		_upgrade_timeout_timer -= delta
 		if _upgrade_timeout_timer <= 0.0:
 			_schedule_next_wave()
+	elif _state == State.WAVE_ACTIVE and _all_spawned:
+		# Safety net: re-check completion every frame after all enemies spawned.
+		# Catches edge cases where signal ordering prevents _check_wave_complete
+		# from seeing the final kill.
+		_check_wave_complete()
 
 
 ## Start a new run: reset everything, begin wave 1.
@@ -92,6 +97,7 @@ func _advance_to_next_wave() -> void:
 
 	_state = State.WAVE_ACTIVE
 	_wave_start_ticks = Time.get_ticks_msec()
+	_heal_player_to_full()
 	EventBus.wave_started.emit(_current_wave)
 
 	if _spawn_manager:
@@ -171,10 +177,27 @@ func _check_wave_complete() -> void:
 	if not _all_spawned:
 		return
 	if _enemies_killed < _enemies_spawned:
-		return
+		# Fallback: if signal-based counting is off, trust the scene count
+		if _count_living_enemies() == 0:
+			_enemies_killed = _enemies_spawned  # reconcile
+		else:
+			return
 	if Time.get_ticks_msec() - _wave_start_ticks < MIN_WAVE_DURATION_MSEC:
 		return
 	_on_wave_cleared()
+
+
+func _count_living_enemies() -> int:
+	var count := 0
+	for e in get_tree().get_nodes_in_group("enemies"):
+		if not is_instance_valid(e):
+			continue
+		if e.has_node("HealthComponent"):
+			var hc = e.get_node("HealthComponent")
+			if hc.has_method("is_alive") and not hc.is_alive():
+				continue
+		count += 1
+	return count
 
 
 func _should_show_upgrade() -> bool:
@@ -208,6 +231,14 @@ func _fixup_wave_data() -> void:
 			push_warning("WaveManager: .tres sub-resources are untyped, rebuilding defaults")
 			_wave_data.waves = WaveData.create_default().waves
 			return
+
+
+func _heal_player_to_full() -> void:
+	var player := get_tree().get_first_node_in_group("players")
+	if player and player.has_node("HealthComponent"):
+		var hc := player.get_node("HealthComponent")
+		if hc.has_method("heal_full"):
+			hc.heal_full()
 
 
 func _reset_wave_tracking() -> void:

@@ -17,32 +17,55 @@ var is_dodging: bool = false
 var dodge_override_velocity: Vector2 = Vector2.ZERO
 
 @onready var sprite: Sprite2D = $Sprite
+@onready var weapon_sprite: Sprite2D = $WeaponSprite
+@onready var left_arm: Sprite2D = $LeftArm
+@onready var right_arm: Sprite2D = $RightArm
+@onready var left_leg: Sprite2D = $LeftLeg
+@onready var right_leg: Sprite2D = $RightLeg
 var _upgrade_applier: UpgradeApplier
 
 
 func _ready() -> void:
 	add_to_group("players")
 	_upgrade_applier = get_node("/root/Main/Systems/UpgradeApplier") as UpgradeApplier
+	EventBus.player_dealt_damage.connect(_on_player_dealt_damage)
 	sprite.texture = PA.generate_sprite(24, 24, ST.player_sprite)
 	sprite.self_modulate = Color(0.3, 0.7, 1.0)
+	sprite.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
+	weapon_sprite.texture = PA.generate_sprite(12, 8, ST.gun_sprite)
+	weapon_sprite.self_modulate = Color(0.8, 0.6, 0.3)
+	weapon_sprite.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
+	# Limbs
+	var limb_tex := PA.generate_sprite(2, 8, ST.arm_stick_sprite)
+	var leg_tex := PA.generate_sprite(2, 8, ST.leg_stick_sprite)
+	var limb_scale := Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
+	for limb in [left_arm, right_arm]:
+		limb.texture = limb_tex
+		limb.self_modulate = Color(0.2, 0.6, 0.9)
+		limb.scale = limb_scale
+	for limb in [left_leg, right_leg]:
+		limb.texture = leg_tex
+		limb.self_modulate = Color(0.2, 0.5, 0.8)
+		limb.scale = limb_scale
 
 
+var _walk_cycle: float = 0.0
 var _aura_timer: float = 0.0
 var _regen_timer: float = 0.0
 
 
 func _physics_process(delta: float) -> void:
 	if not health.is_alive():
+		for limb in [left_arm, right_arm, left_leg, right_leg]:
+			limb.visible = false
 		return
 
-	# Update aim direction from mouse.
-	# facing_direction is controlled by CombatSystem.
-	var mouse_pos := get_global_mouse_position()
-	aim_direction = (mouse_pos - global_position)
-	if aim_direction.length() < 1.0:
-		aim_direction = facing_direction
-	else:
-		aim_direction = aim_direction.normalized()
+	# aim_direction is set by CombatSystem (auto-aim).
+	weapon_sprite.rotation = aim_direction.angle()
+	weapon_sprite.position = aim_direction * 24.0
+
+	# Limb animation
+	_animate_limbs(delta)
 
 	# Movement
 	if is_dodging:
@@ -89,8 +112,25 @@ func take_damage(amount: int, damage_type: String, source: Node, knockback_value
 	return result
 
 
+## Update weapon sprite to match the given weapon type.
+func update_weapon_visual(weapon_type: String) -> void:
+	if weapon_type == "melee":
+		weapon_sprite.texture = PA.generate_sprite(8, 16, ST.sword_sprite)
+		weapon_sprite.self_modulate = Color(0.8, 0.7, 0.5)
+	else:
+		weapon_sprite.texture = PA.generate_sprite(12, 8, ST.gun_sprite)
+		weapon_sprite.self_modulate = Color(0.8, 0.6, 0.3)
+
+
 func heal(amount: int) -> void:
 	health.heal(amount)
+
+
+func _on_player_dealt_damage(amount: int) -> void:
+	if _upgrade_applier:
+		var ratio := _upgrade_applier.get_raw("lifesteal_ratio")
+		if ratio > 0.0:
+			heal(maxi(1, int(float(amount) * ratio)))
 
 
 ## Called by dodge system to take over movement.
@@ -105,7 +145,29 @@ func end_dodge_override() -> void:
 	dodge_override_velocity = Vector2.ZERO
 
 
+func _animate_limbs(delta: float) -> void:
+	const LEG_SWING := 0.45
+	const LEG_SPEED := 10.0
+
+	# Legs — pendulum swing based on movement speed
+	var speed := velocity.length()
+	if speed > 5.0 and not is_dodging:
+		_walk_cycle += delta * speed / base_speed * LEG_SPEED
+	else:
+		_walk_cycle = move_toward(_walk_cycle, 0.0, delta * 8.0)
+
+	left_leg.rotation = sin(_walk_cycle) * LEG_SWING
+	right_leg.rotation = sin(_walk_cycle + PI) * LEG_SWING
+
+	# Arms — follow aim direction from shoulder pivot
+	# arm at rotation 0 points down; convert to standard angle
+	var arm_angle := aim_direction.angle() - PI / 2.0
+	left_arm.rotation = arm_angle
+	right_arm.rotation = arm_angle
+
+
 func _apply_damage_aura(damage: float) -> void:
+	var dmg := int(damage)
 	var enemies := get_tree().get_nodes_in_group("enemies")
 	for e in enemies:
 		if not is_instance_valid(e):
@@ -113,4 +175,5 @@ func _apply_damage_aura(damage: float) -> void:
 		var enemy := e as Node2D
 		if enemy and enemy.global_position.distance_to(global_position) <= 120.0:
 			if enemy.has_method("take_damage"):
-				enemy.take_damage(int(damage), "aura", self, 0.0)
+				enemy.take_damage(dmg, "aura", self, 0.0)
+				EventBus.player_dealt_damage.emit(dmg)

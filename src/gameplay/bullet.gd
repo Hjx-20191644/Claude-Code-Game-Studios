@@ -26,6 +26,7 @@ func _ready() -> void:
 	var sprite: Sprite2D = $Sprite
 	sprite.texture = PA.generate_sprite(8, 8, ST.bullet_sprite)
 	sprite.self_modulate = Color(1.0, 0.8, 0.2)
+	sprite.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
 
 
 func _physics_process(delta: float) -> void:
@@ -46,7 +47,10 @@ func _on_body_entered(body: Node) -> void:
 		return  # Already pierced through this one
 
 	_hit_bodies.append(body)
-	body.take_damage(damage, damage_type, source, knockback_value)
+	var valid_source := source if is_instance_valid(source) else null
+	body.take_damage(damage, damage_type, valid_source, knockback_value)
+	if valid_source and valid_source.is_in_group("players"):
+		EventBus.player_dealt_damage.emit(damage)
 
 	if explosive_radius > 0.0:
 		_explode()
@@ -68,10 +72,13 @@ func _explode() -> void:
 	query.shape = shape
 	query.transform = Transform2D(0, global_position)
 	query.collision_mask = 2  # Enemy layer
+	var valid_source := source if is_instance_valid(source) else null
 	var results := space.intersect_shape(query)
 	for result in results:
 		var body: Node = result.get("collider")
 		if body and body.has_method("take_damage") and body not in _hit_bodies:
 			_hit_bodies.append(body)
-			body.take_damage(damage, damage_type, source, 0.0)
+			body.take_damage(damage, damage_type, valid_source, 0.0)
+			if valid_source and valid_source.is_in_group("players"):
+				EventBus.player_dealt_damage.emit(damage)
 	queue_free()

@@ -40,5 +40,10 @@ func get_raw(stat_name: String) -> float:
 	return _modifiers.get(stat_name, 0.0)
 
 
+func add_meta_bonus(stat: String, value: float) -> void:
+	var current: float = _modifiers.get(stat, 0.0)
+	_modifiers[stat] = current + value
+
+
 func reset() -> void:
 	_modifiers.clear()

@@ -42,6 +42,13 @@ static func set_fullscreen(value: bool) -> void:
 	cfg.save(PATH)
 
 
+## Returns a human-readable label for the current window mode.
+static func get_mode_label() -> String:
+	if is_fullscreen():
+		return "Window Mode: Maximized" if OS.has_feature("editor") else "Window Mode: Fullscreen"
+	return "Window Mode: Windowed"
+
+
 ## Convert 0–100 slider value to decibels (-40 to +6).
 static func slider_to_db(slider_value: int) -> float:
 	var t := clampf(float(slider_value) / 100.0, 0.0, 1.0)
@@ -57,7 +64,10 @@ static func effective_sfx_db(master: int, sfx: int) -> float:
 ## Apply window mode from saved settings.
 static func apply_window_mode() -> void:
 	if is_fullscreen():
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		if OS.has_feature("editor"):
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_MAXIMIZED)
+		else:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 

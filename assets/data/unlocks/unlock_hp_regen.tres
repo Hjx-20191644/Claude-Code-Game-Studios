@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MetaUnlockData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/core/meta_unlock_data.gd" id="1_meta"]
+
+[resource]
+script = ExtResource("1_meta")
+id = "hp_regen_bonus"
+display_name = "生命回复"
+description = "每局开始时每秒回复 2 点生命值"
+cost = 150
+prerequisites = Array[String](["max_hp_bonus"])
+unlock_type = "stat_bonus"
+target_stat = "hp_regen"
+value = 2.0

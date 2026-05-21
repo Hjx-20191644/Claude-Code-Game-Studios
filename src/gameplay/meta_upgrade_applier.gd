@@ -57,6 +57,10 @@ func _apply_single(ul: Resource) -> void:
 		_:
 			if ul.target_stat.begins_with("weapon_"):
 				pass  # Handled by WeaponSelectUI
+			elif ul.target_stat in ["hp_regen", "lifesteal_ratio"]:
+				var ua := _find_node_in_systems("UpgradeApplier")
+				if ua and ua.has_method("add_meta_bonus"):
+					ua.add_meta_bonus(ul.target_stat, ul.value)
 
 
 func _load_unlock(id: String) -> Resource:

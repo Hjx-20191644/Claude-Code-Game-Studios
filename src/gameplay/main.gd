@@ -13,6 +13,7 @@ class_name Main
 
 
 func _ready() -> void:
+	SettingsManager.apply_window_mode()
 	assert(_wave_manager, "Main: WaveManager not found")
 	assert(_upgrade_pool, "Main: UpgradePool not found")
 	assert(_player, "Main: Player not found")

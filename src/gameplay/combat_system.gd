@@ -23,18 +23,23 @@ var _dual_melee_timer: float = 0.0
 var _melee_first_hits: Array[Node] = []  # enemies hit by first weapon in dual melee
 var _melee_first_weapon_dmg: int = 0
 
+const PA = preload("res://src/visuals/pixel_art.gd")
+const ST = preload("res://src/visuals/sprite_templates.gd")
+
 # References
 @onready var player: Player = _find_player()
 @onready var input_buffer: Node = $"../InputBuffer"
 var _upgrade_applier: UpgradeApplier
 var _bullet_scene: PackedScene = preload("res://scenes/bullet.tscn")
 var _arena_enemies: Node2D
+var _effects_container: Node2D
 
 
 func _ready() -> void:
 	_load_default_weapons()
 	_upgrade_applier = get_node("../UpgradeApplier") as UpgradeApplier
 	_arena_enemies = get_node("../../Arena/Enemies")
+	_effects_container = get_node("../../Arena/Effects")
 	input_buffer.melee_attack_pressed.connect(_on_melee_pressed)
 	input_buffer.ranged_attack_pressed.connect(_on_ranged_pressed)
 
@@ -59,6 +64,9 @@ func _find_player() -> Player:
 func _load_default_weapons() -> void:
 	left_weapon = GameConfig.get_weapon_data(WeaponSelection.left_weapon_id)
 	right_weapon = GameConfig.get_weapon_data(WeaponSelection.right_weapon_id)
+	if player:
+		var display_type := left_weapon.weapon_type if left_weapon else right_weapon.weapon_type
+		player.update_weapon_visual(display_type)
 
 
 var _nearest_enemy_dist: float = INF
@@ -192,6 +200,7 @@ func _try_melee_attack() -> void:
 
 func _do_melee_sweep(weapon: WeaponData) -> void:
 	_flash_player_melee()
+	_spawn_slash_effect(player.aim_direction, weapon.melee_radius, weapon.melee_angle)
 	var enemies := _get_enemies_in_fan(player.global_position, player.aim_direction, weapon.melee_radius, weapon.melee_angle)
 	var dmg_mult := _get_melee_damage_mult()
 	var is_crit := _roll_crit()
@@ -199,10 +208,11 @@ func _do_melee_sweep(weapon: WeaponData) -> void:
 	for enemy in enemies:
 		var dmg := _calc_melee_damage(weapon.base_damage, dmg_mult, is_crit)
 		enemy.take_damage(dmg, "melee", player, GameConfig.MELEE_KNOCKBACK_DISTANCE * weapon.knockback_mult)
-		_apply_lifesteal(dmg)
+		EventBus.player_dealt_damage.emit(dmg)
 
 
 func _do_dual_melee_second(weapon: WeaponData, slot: String, aim: Vector2) -> void:
+	_spawn_slash_effect(aim, weapon.melee_radius, weapon.melee_angle)
 	var enemies := _get_enemies_in_fan(player.global_position, aim, weapon.melee_radius, weapon.melee_angle)
 
 	for enemy in enemies:
@@ -212,11 +222,11 @@ func _do_dual_melee_second(weapon: WeaponData, slot: String, aim: Vector2) -> vo
 			var overlap_total := int(float(_melee_first_weapon_dmg + second_dmg) * GameConfig.DUAL_MELEE_OVERLAP_BONUS)
 			var remaining := overlap_total - _melee_first_weapon_dmg
 			enemy.take_damage(remaining, "melee", player, GameConfig.MELEE_KNOCKBACK_DISTANCE * weapon.knockback_mult)
-			_apply_lifesteal(remaining)
+			EventBus.player_dealt_damage.emit(remaining)
 		else:
 			var dmg := _calc_melee_damage(weapon.base_damage, _get_melee_damage_mult(), _roll_crit())
 			enemy.take_damage(dmg, "melee", player, GameConfig.MELEE_KNOCKBACK_DISTANCE * weapon.knockback_mult)
-			_apply_lifesteal(dmg)
+			EventBus.player_dealt_damage.emit(dmg)
 
 	_melee_first_hits.clear()
 	_apply_melee_cooldown(slot)
@@ -297,6 +307,7 @@ func _apply_ranged_cooldown(slot: String) -> void:
 
 
 func _spawn_bullet(weapon: WeaponData, direction: Vector2, damage: int) -> void:
+	_spawn_muzzle_flash(direction)
 	var bullet := _bullet_scene.instantiate() as Bullet
 	bullet.global_position = player.global_position
 	bullet.direction = direction
@@ -315,12 +326,47 @@ func _spawn_bullet(weapon: WeaponData, direction: Vector2, damage: int) -> void:
 func _flash_player_melee() -> void:
 	if not player:
 		return
-	var sprite := player.get_node_or_null("Sprite") as ColorRect
-	if not sprite:
-		return
-	sprite.modulate = Color(1.5, 1.5, 1.5)
-	var tw := create_tween()
-	tw.tween_property(sprite, "modulate", Color.WHITE, 0.08)
+	# Brief white flash on player sprite
+	var ps := player.get_node_or_null("Sprite") as Sprite2D
+	if ps:
+		ps.self_modulate = Color(1.5, 1.5, 1.5)
+		var tw := create_tween()
+		tw.tween_property(ps, "self_modulate", player.sprite.self_modulate, 0.08)
+	# Weapon swing flash
+	var ws := player.get_node_or_null("WeaponSprite") as Sprite2D
+	if ws:
+		var orig_color := ws.self_modulate
+		ws.self_modulate = Color(1.5, 1.5, 1.5)
+		var tw := create_tween()
+		tw.tween_property(ws, "self_modulate", orig_color, 0.08)
+
+
+func _spawn_slash_effect(direction: Vector2, radius: float, angle_deg: float) -> void:
+	var fx := Sprite2D.new()
+	fx.texture = PA.generate_sprite(int(radius), int(radius), ST.slash_arc_sprite)
+	fx.self_modulate = Color(1.0, 1.0, 1.0, 0.6)
+	fx.rotation = direction.angle() - deg_to_rad(angle_deg / 2.0)
+	fx.global_position = player.global_position
+	fx.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
+	_effects_container.add_child(fx)
+	var tw := fx.create_tween()
+	tw.tween_property(fx, "scale", Vector2(1.2, 1.2), 0.15)
+	tw.parallel().tween_property(fx, "self_modulate", Color(1.0, 1.0, 1.0, 0.0), 0.15)
+	tw.tween_callback(fx.queue_free)
+
+
+func _spawn_muzzle_flash(direction: Vector2) -> void:
+	var fx := Sprite2D.new()
+	fx.texture = PA.generate_sprite(10, 10, ST.muzzle_flash_sprite)
+	fx.self_modulate = Color(1.0, 0.9, 0.2, 0.8)
+	fx.rotation = direction.angle()
+	fx.global_position = player.global_position + direction * 30.0
+	fx.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
+	_effects_container.add_child(fx)
+	var tw := fx.create_tween()
+	tw.tween_property(fx, "self_modulate", Color(1.0, 0.5, 0.0, 0.0), 0.08)
+	tw.parallel().tween_property(fx, "scale", Vector2(1.5, 1.5), 0.08)
+	tw.tween_callback(fx.queue_free)
 
 
 # --- Fan detection ---
@@ -366,11 +412,3 @@ func _calc_melee_damage(base: int, dmg_mult: float, is_crit: bool) -> int:
 	if is_crit:
 		dmg *= 2.0
 	return maxi(1, int(dmg))
-
-
-func _apply_lifesteal(damage: int) -> void:
-	if not _upgrade_applier or not player:
-		return
-	var ratio := _upgrade_applier.get_raw("lifesteal_ratio")
-	if ratio > 0.0:
-		player.heal(maxi(1, int(float(damage) * ratio)))

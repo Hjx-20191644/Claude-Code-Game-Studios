@@ -69,6 +69,13 @@ func heal(amount: int) -> void:
 	EventBus.health_changed.emit(float(current_hp), float(max_hp))
 
 
+func heal_full() -> void:
+	if state != State.ALIVE:
+		return
+	current_hp = max_hp
+	EventBus.health_changed.emit(float(current_hp), float(max_hp))
+
+
 ## Set invincibility externally (e.g., by dodge system).
 func set_invincible(duration: float) -> void:
 	is_invincible = true

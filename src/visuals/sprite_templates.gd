@@ -13,18 +13,44 @@ const T = PA.TRANSPARENT
 
 
 static func player_sprite(img: Image) -> void:
-	PA.outlined_rect(img, 8, 1, 8, 6, M, O)
-	PA.fill_rect(img, 10, 3, 2, 1, H)
-	PA.outlined_rect(img, 8, 7, 8, 8, B, O)
-	PA.fill_rect(img, 10, 9, 4, 2, H)
-	PA.outlined_rect(img, 4, 8, 3, 8, M, O)
-	PA.outlined_rect(img, 17, 8, 3, 8, M, O)
-	PA.fill_rect(img, 4, 15, 3, 2, H)
-	PA.fill_rect(img, 17, 15, 3, 2, H)
-	PA.outlined_rect(img, 7, 15, 4, 8, S, O)
-	PA.outlined_rect(img, 13, 15, 4, 8, S, O)
-	PA.fill_rect(img, 6, 22, 6, 2, O)
-	PA.fill_rect(img, 12, 22, 6, 2, O)
+	# Brotato-style potato body — round, no limbs (limbs are separate sprites)
+	PA.fill_rect(img, 3, 6, 18, 12, M)
+	PA.fill_rect(img, 5, 4, 14, 4, M)
+	PA.fill_rect(img, 5, 16, 14, 4, M)
+	PA.fill_rect(img, 7, 3, 10, 2, M)
+	PA.fill_rect(img, 7, 18, 10, 2, M)
+	PA.draw_h_line(img, 5, 3, 14, O)
+	PA.draw_h_line(img, 7, 2, 10, O)
+	PA.draw_h_line(img, 4, 4, 2, O); PA.draw_h_line(img, 18, 4, 2, O)
+	PA.draw_v_line(img, 3, 5, 14, O); PA.draw_v_line(img, 20, 5, 14, O)
+	PA.draw_h_line(img, 4, 19, 2, O); PA.draw_h_line(img, 18, 19, 2, O)
+	PA.draw_h_line(img, 5, 20, 14, O)
+	PA.fill_rect(img, 8, 5, 8, 3, H)
+	# Eyes
+	PA.draw_pixel(img, 9, 10, B); PA.draw_pixel(img, 10, 10, B)
+	PA.draw_pixel(img, 13, 10, B); PA.draw_pixel(img, 14, 10, B)
+	PA.draw_pixel(img, 9, 11, O); PA.draw_pixel(img, 10, 11, O)
+	PA.draw_pixel(img, 13, 11, O); PA.draw_pixel(img, 14, 11, O)
+	# Mouth
+	PA.draw_pixel(img, 10, 15, O); PA.draw_pixel(img, 11, 16, O)
+	PA.draw_pixel(img, 12, 16, O); PA.draw_pixel(img, 13, 15, O)
+
+
+static func arm_stick_sprite(img: Image) -> void:
+	# 2×8 thin stick arm — 1px dark + 1px highlight
+	PA.draw_v_line(img, 0, 0, 8, O)
+	PA.draw_v_line(img, 1, 0, 8, H)
+	# tiny hand
+	PA.draw_pixel(img, 0, 0, H)
+
+
+static func leg_stick_sprite(img: Image) -> void:
+	# 2×8 thin stick leg — 1px dark + 1px highlight
+	PA.draw_v_line(img, 0, 0, 8, O)
+	PA.draw_v_line(img, 1, 0, 8, H)
+	# tiny foot
+	PA.draw_pixel(img, 0, 7, H)
+	PA.draw_pixel(img, 1, 7, H)
 
 
 static func enemy_melee_sprite(img: Image) -> void:
@@ -157,6 +183,59 @@ static func bullet_sprite(img: Image) -> void:
 				elif dx + dy >= 2:
 					c = M
 				PA.draw_pixel(img, x, y, c)
+
+
+static func sword_sprite(img: Image) -> void:
+	# 8x16 blade — grey handle, white blade
+	PA.outlined_rect(img, 3, 2, 2, 4, M, O)
+	PA.outlined_rect(img, 3, 0, 2, 3, H, O)
+	PA.draw_pixel(img, 4, 5, H)
+
+
+static func gun_sprite(img: Image) -> void:
+	# 12x8 pistol — dark body + bright barrel
+	PA.outlined_rect(img, 2, 2, 8, 4, M, O)
+	PA.fill_rect(img, 9, 3, 3, 2, H)
+	PA.draw_pixel(img, 6, 1, O)
+
+
+static func slash_arc_sprite(img: Image) -> void:
+	# 48x48 fan arc — diagonal sweep with bright edge
+	var w := img.get_width()
+	var h := img.get_height()
+	var cx := w / 2
+	var cy := h / 2
+	for y in h:
+		for x in w:
+			var dx := x - cx
+			var dy := y - cy
+			var dist := sqrt(float(dx * dx + dy * dy))
+			if dist < 10 or dist > 24:
+				continue
+			var angle := atan2(float(-dy), float(dx))
+			if angle < -1.2 or angle > 1.2:
+				continue
+			var c := M
+			if dist > 22:
+				c = H
+			elif dist < 12:
+				c = S
+			PA.draw_pixel(img, x, y, c)
+
+
+static func muzzle_flash_sprite(img: Image) -> void:
+	# 10x10 star burst — cross + diagonals
+	var w := img.get_width()
+	var h := img.get_height()
+	var cx := w / 2
+	var cy := h / 2
+	PA.draw_h_line(img, cx - 3, cy, 7, H)
+	PA.draw_v_line(img, cx, cy - 3, 7, H)
+	PA.draw_pixel(img, cx - 2, cy - 2, H)
+	PA.draw_pixel(img, cx + 2, cy - 2, H)
+	PA.draw_pixel(img, cx - 2, cy + 2, H)
+	PA.draw_pixel(img, cx + 2, cy + 2, H)
+	PA.draw_h_line(img, cx - 1, cy, 3, B)
 
 
 static func shard_sprite(img: Image) -> void:

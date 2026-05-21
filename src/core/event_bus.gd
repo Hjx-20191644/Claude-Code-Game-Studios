@@ -47,3 +47,4 @@ signal boss_damaged(current_hp: int, max_hp: int)
 # --- Player Status ---
 signal health_changed(new_health: float, max_health: float)
 signal weapon_changed(weapon_data: Dictionary)
+signal player_dealt_damage(amount: int)

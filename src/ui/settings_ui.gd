@@ -143,4 +143,4 @@ func _refresh_labels() -> void:
 
 
 func _refresh_fullscreen_btn() -> void:
-	_fullscreen_btn.text = "Window Mode: Fullscreen" if SettingsManager.is_fullscreen() else "Window Mode: Windowed"
+	_fullscreen_btn.text = SettingsManager.get_mode_label()

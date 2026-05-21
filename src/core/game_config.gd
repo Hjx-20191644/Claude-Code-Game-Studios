@@ -28,6 +28,9 @@ const DODGE_COOLDOWN: float = 2.0
 const ENEMY_DEATH_LINGER: float = 0.3
 const CONTACT_DAMAGE_COOLDOWN: float = 0.5
 
+# --- Visual ---
+const SPRITE_SCALE: float = 2.0
+
 # --- Arena ---
 const ARENA_WIDTH: float = 1000.0
 const ARENA_HEIGHT: float = 600.0

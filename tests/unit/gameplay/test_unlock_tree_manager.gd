@@ -21,7 +21,7 @@ func before_each() -> void:
 
 func test_ac1_all_unlocks_loaded() -> void:
 	var all: Array = _utm.get_all_unlocks()
-	assert_eq(all.size(), 7)
+	assert_eq(all.size(), 9)
 
 
 # --- AC-2: can_purchase true when affordable and prereqs met ---

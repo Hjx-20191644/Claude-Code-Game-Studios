@@ -24,6 +24,7 @@ func _ready() -> void:
 	sprite.centered = true
 	sprite.texture = PA.generate_sprite(8, 8, ST.shard_sprite)
 	sprite.self_modulate = Color(0.2, 0.9, 1.0)  # cyan
+	sprite.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
 	add_child(sprite)
 
 

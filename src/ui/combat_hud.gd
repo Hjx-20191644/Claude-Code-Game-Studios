@@ -6,7 +6,7 @@ class_name CombatHUD
 
 @export var health_bar_width: float = 40.0
 @export var health_bar_height: float = 4.0
-@export var health_bar_offset_y: float = -20.0
+@export var health_bar_offset_y: float = -28.0
 @export var health_bar_tween_duration: float = 0.2
 @export var hud_margin: float = 20.0
 @export var wave_announce_duration: float = 2.0
@@ -15,7 +15,7 @@ class_name CombatHUD
 var _player: Player
 var _health_bar: ColorRect
 var _health_bar_bg: ColorRect
-var _ammo_label: Label
+
 var _dodge_dot: ColorRect
 var _score_label: Label
 var _wave_label: Label
@@ -43,7 +43,6 @@ func _ready() -> void:
 	_wave_manager = _find_node_in_systems("WaveManager") as WaveManager
 
 	_build_health_bar()
-	_build_ammo_indicator()
 	_build_dodge_indicator()
 	_build_score_labels()
 	_build_wave_announce()
@@ -59,7 +58,6 @@ func _process(_delta: float) -> void:
 	if not _player or not is_instance_valid(_player):
 		return
 	_update_world_space_elements()
-	_update_ammo()
 	_update_dodge()
 	_update_health_bar()
 
@@ -102,32 +100,6 @@ func _update_health_bar() -> void:
 	_health_bar.size.x = health_bar_width * ratio
 
 
-func _build_ammo_indicator() -> void:
-	_ammo_label = Label.new()
-	_ammo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_ammo_label.add_theme_font_size_override("font_size", 14)
-	_ammo_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.8))
-	add_child(_ammo_label)
-
-
-func _update_ammo() -> void:
-	if not _player or not _combat_system:
-		return
-
-	var screen_pos := _world_to_screen(_player.global_position)
-	_ammo_label.position = screen_pos + Vector2(16, 10)
-
-	var text := "∞"
-	var is_low := false
-	if _combat_system.has_method("get_ammo_display"):
-		text = _combat_system.get_ammo_display()
-		is_low = text == "0"
-
-	_ammo_label.text = text
-	_ammo_label.add_theme_color_override("font_color",
-		Color.RED if is_low else Color(1.0, 1.0, 1.0, 0.8))
-
-
 func _build_dodge_indicator() -> void:
 	_dodge_dot = ColorRect.new()
 	_dodge_dot.size = Vector2(8, 8)
@@ -140,7 +112,7 @@ func _update_dodge() -> void:
 		return
 
 	var screen_pos := _world_to_screen(_player.global_position)
-	_dodge_dot.position = screen_pos + Vector2(-24, 10)
+	_dodge_dot.position = screen_pos + Vector2(-30, 10)
 
 	var ratio := _dodge_system.get_cooldown_ratio()
 	if ratio >= 1.0:
