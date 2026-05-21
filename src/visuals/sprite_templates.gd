@@ -54,117 +54,219 @@ static func leg_stick_sprite(img: Image) -> void:
 
 
 static func enemy_melee_sprite(img: Image) -> void:
-	PA.fill_rect(img, 6, 0, 2, 3, O)
-	PA.fill_rect(img, 16, 0, 2, 3, O)
-	PA.outlined_rect(img, 8, 2, 8, 6, M, O)
-	PA.fill_rect(img, 10, 4, 4, 1, O)
-	PA.outlined_rect(img, 7, 8, 10, 7, B, O)
-	PA.fill_rect(img, 10, 10, 4, 2, S)
-	PA.outlined_rect(img, 2, 8, 4, 7, M, O)
-	PA.outlined_rect(img, 18, 8, 4, 7, M, O)
-	PA.fill_rect(img, 1, 14, 2, 2, O)
-	PA.fill_rect(img, 21, 14, 2, 2, O)
-	PA.outlined_rect(img, 5, 15, 5, 8, S, O)
-	PA.outlined_rect(img, 14, 15, 5, 8, S, O)
-	PA.fill_rect(img, 3, 22, 4, 2, O)
-	PA.fill_rect(img, 17, 22, 4, 2, O)
+	# Cthulhu-style alien — tentacled face, hunched body, claw arms
+	# Body: asymmetric lump
+	PA.fill_rect(img, 5, 4, 14, 10, M)
+	PA.fill_rect(img, 4, 6, 2, 6, M); PA.fill_rect(img, 18, 5, 2, 7, M)
+	PA.fill_rect(img, 7, 3, 10, 3, M)
+	PA.fill_rect(img, 8, 14, 8, 4, S)
+	# Outline body
+	PA.draw_h_line(img, 8, 2, 8, O)
+	PA.draw_h_line(img, 5, 3, 2, O); PA.draw_h_line(img, 15, 2, 2, O)
+	PA.draw_v_line(img, 3, 4, 8, O); PA.draw_v_line(img, 20, 4, 8, O)
+	PA.draw_h_line(img, 4, 13, 16, O)
+	PA.draw_h_line(img, 5, 14, 14, O)
+	PA.draw_v_line(img, 5, 14, 4, O); PA.draw_v_line(img, 18, 14, 4, O)
+	PA.draw_h_line(img, 6, 18, 12, O)
+	# Tentacles around mouth
+	PA.draw_v_line(img, 9, 13, 3, O); PA.draw_v_line(img, 14, 13, 3, O)
+	PA.draw_pixel(img, 8, 14, O); PA.draw_pixel(img, 15, 14, O)
+	PA.draw_v_line(img, 8, 15, 2, O); PA.draw_v_line(img, 15, 15, 2, O)
+	# Eyes — 3 small glowing eyes
+	PA.fill_rect(img, 8, 6, 2, 2, B)
+	PA.fill_rect(img, 11, 5, 2, 2, B)
+	PA.fill_rect(img, 14, 6, 2, 2, B)
+	PA.draw_pixel(img, 8, 6, O); PA.draw_pixel(img, 11, 5, O); PA.draw_pixel(img, 14, 6, O)
+	# Claw arms
+	PA.draw_v_line(img, 2, 7, 6, O); PA.draw_v_line(img, 21, 6, 7, O)
+	PA.draw_pixel(img, 1, 7, O); PA.draw_pixel(img, 22, 6, O)
+	PA.draw_h_line(img, 0, 9, 3, O); PA.draw_h_line(img, 21, 8, 3, O)
+	# Legs
+	PA.draw_v_line(img, 9, 18, 5, O); PA.draw_v_line(img, 15, 18, 5, O)
+	PA.draw_pixel(img, 8, 22, O); PA.draw_pixel(img, 16, 22, O)
 
 
 static func enemy_ranged_sprite(img: Image) -> void:
-	PA.outlined_rect(img, 9, 1, 6, 5, M, O)
-	PA.fill_rect(img, 10, 3, 2, 1, H)
-	PA.outlined_rect(img, 9, 6, 6, 9, B, O)
-	PA.outlined_rect(img, 15, 8, 8, 3, M, O)
-	PA.fill_rect(img, 22, 8, 2, 3, O)
-	PA.outlined_rect(img, 6, 7, 2, 7, S, O)
-	PA.outlined_rect(img, 8, 15, 3, 8, S, O)
-	PA.outlined_rect(img, 13, 15, 3, 8, S, O)
-	PA.fill_rect(img, 7, 22, 5, 2, O)
-	PA.fill_rect(img, 12, 22, 5, 2, O)
+	# Alien spitter — elongated head, projectile gland, thin body
+	# Head (elongated back)
+	PA.fill_rect(img, 3, 2, 18, 8, M)
+	PA.fill_rect(img, 1, 4, 4, 4, M)
+	PA.fill_rect(img, 5, 1, 14, 3, M)
+	# Outline head
+	PA.draw_h_line(img, 6, 0, 12, O)
+	PA.draw_h_line(img, 3, 1, 4, O); PA.draw_h_line(img, 15, 1, 4, O)
+	PA.draw_v_line(img, 2, 2, 6, O)
+	PA.draw_h_line(img, 1, 8, 20, O)
+	PA.draw_v_line(img, 1, 4, 4, O)
+	# Eyes — single large eye
+	PA.fill_rect(img, 8, 4, 4, 3, B)
+	PA.draw_pixel(img, 9, 5, O); PA.draw_pixel(img, 11, 5, O)
+	# Spitting tube
+	PA.draw_v_line(img, 19, 3, 5, O)
+	PA.draw_h_line(img, 20, 4, 3, O)
+	PA.draw_pixel(img, 22, 5, H)
+	# Body
+	PA.fill_rect(img, 6, 9, 10, 8, S)
+	PA.fill_rect(img, 8, 10, 6, 6, M)
+	PA.draw_h_line(img, 7, 17, 8, O)
+	PA.draw_v_line(img, 5, 9, 8, O); PA.draw_v_line(img, 17, 9, 8, O)
+	# Thin legs
+	PA.draw_v_line(img, 8, 17, 6, O); PA.draw_v_line(img, 14, 17, 6, O)
+	PA.draw_pixel(img, 7, 22, O); PA.draw_pixel(img, 15, 22, O)
+	# Arms
+	PA.draw_v_line(img, 5, 10, 5, O); PA.draw_v_line(img, 17, 10, 5, O)
 
 
 static func enemy_charger_sprite(img: Image) -> void:
-	PA.outlined_rect(img, 7, 0, 10, 6, M, O)
-	PA.fill_rect(img, 9, 2, 6, 2, H)
-	PA.outlined_rect(img, 5, 6, 14, 4, B, O)
-	PA.fill_rect(img, 8, 7, 8, 2, H)
-	PA.outlined_rect(img, 8, 9, 8, 8, M, O)
-	PA.fill_rect(img, 6, 10, 3, 6, M)
-	PA.outlined_rect(img, 4, 9, 3, 7, M, O)
-	PA.outlined_rect(img, 17, 9, 3, 7, M, O)
-	PA.fill_rect(img, 3, 14, 2, 3, O)
-	PA.fill_rect(img, 19, 14, 2, 3, O)
-	PA.outlined_rect(img, 7, 16, 4, 7, S, O)
-	PA.outlined_rect(img, 13, 16, 4, 7, S, O)
-	PA.fill_rect(img, 6, 22, 6, 2, O)
-	PA.fill_rect(img, 12, 22, 6, 2, O)
+	# Streamlined predator — pointed head, lean body, forward posture
+	# Pointed snout
+	PA.fill_rect(img, 0, 8, 4, 4, O)
+	PA.draw_h_line(img, 3, 7, 3, O); PA.draw_h_line(img, 3, 12, 3, O)
+	PA.draw_pixel(img, 0, 9, M); PA.draw_pixel(img, 0, 10, H)
+	# Head
+	PA.fill_rect(img, 3, 4, 10, 10, M)
+	PA.draw_h_line(img, 4, 3, 8, O)
+	PA.draw_v_line(img, 3, 4, 10, O); PA.draw_v_line(img, 13, 4, 10, O)
+	# Eyes — angled, aggressive
+	PA.fill_rect(img, 6, 6, 2, 2, B); PA.fill_rect(img, 10, 6, 2, 2, B)
+	PA.draw_pixel(img, 5, 6, O); PA.draw_pixel(img, 7, 7, O)
+	PA.draw_pixel(img, 11, 6, O); PA.draw_pixel(img, 13, 7, O)
+	# Body
+	PA.fill_rect(img, 6, 14, 8, 6, S)
+	PA.fill_rect(img, 7, 13, 6, 2, M)
+	PA.draw_h_line(img, 5, 20, 10, O)
+	PA.draw_v_line(img, 5, 14, 6, O); PA.draw_v_line(img, 15, 14, 6, O)
+	# Legs — running pose
+	PA.draw_v_line(img, 8, 20, 3, O); PA.draw_h_line(img, 7, 22, 3, O)
+	PA.draw_v_line(img, 14, 20, 3, O); PA.draw_h_line(img, 13, 22, 3, O)
+	# Dorsal fins
+	PA.draw_v_line(img, 12, 3, 3, O); PA.draw_pixel(img, 11, 4, O)
 
 
 static func enemy_exploder_sprite(img: Image) -> void:
-	PA.fill_rect(img, 3, 2, 18, 2, O)
-	PA.fill_rect(img, 1, 4, 2, 12, O)
-	PA.fill_rect(img, 21, 4, 2, 12, O)
-	PA.fill_rect(img, 2, 4, 20, 12, M)
-	PA.fill_rect(img, 6, 6, 12, 8, H)
-	PA.fill_rect(img, 3, 16, 18, 2, O)
-	PA.fill_rect(img, 11, 0, 2, 3, O)
-	PA.fill_rect(img, 11, 0, 2, 1, H)
-	PA.outlined_rect(img, 5, 17, 3, 5, S, O)
-	PA.outlined_rect(img, 16, 17, 3, 5, S, O)
-	PA.fill_rect(img, 4, 22, 5, 2, O)
-	PA.fill_rect(img, 15, 22, 5, 2, O)
+	# Bloated pustule alien — round, veiny, about to burst
+	# Main body — very round
+	PA.fill_rect(img, 4, 4, 16, 14, M)
+	PA.fill_rect(img, 7, 2, 10, 4, M)
+	PA.fill_rect(img, 6, 18, 12, 3, M)
+	PA.fill_rect(img, 9, 1, 6, 2, M)
+	PA.fill_rect(img, 10, 20, 4, 2, S)
+	# Outline
+	PA.draw_h_line(img, 10, 0, 4, O)
+	PA.draw_h_line(img, 5, 1, 6, O); PA.draw_h_line(img, 15, 1, 2, O)
+	PA.draw_h_line(img, 3, 2, 4, O); PA.draw_h_line(img, 17, 2, 4, O)
+	PA.draw_v_line(img, 2, 3, 14, O); PA.draw_v_line(img, 21, 3, 14, O)
+	PA.draw_h_line(img, 4, 17, 4, O); PA.draw_h_line(img, 16, 17, 4, O)
+	PA.draw_h_line(img, 6, 18, 12, O)
+	PA.draw_h_line(img, 8, 19, 8, O)
+	PA.draw_h_line(img, 10, 20, 4, O)
+	# Fuse
+	PA.draw_v_line(img, 12, 0, 3, O)
+	PA.draw_pixel(img, 11, 0, H)  # spark
+	# Eyes — crazed, different sizes
+	PA.fill_rect(img, 8, 7, 3, 3, B)
+	PA.fill_rect(img, 13, 6, 2, 3, B)
+	PA.draw_pixel(img, 9, 8, O); PA.draw_pixel(img, 14, 7, O)
+	# Mouth — gasping
+	PA.fill_rect(img, 9, 13, 5, 3, O)
+	PA.draw_pixel(img, 10, 13, H)
+	# Veins
+	PA.draw_v_line(img, 5, 7, 3, O); PA.draw_v_line(img, 19, 8, 3, O)
+	PA.draw_pixel(img, 6, 10, O); PA.draw_pixel(img, 18, 11, O)
+	# Tiny legs
+	PA.draw_v_line(img, 8, 20, 3, O); PA.draw_v_line(img, 15, 20, 3, O)
+	PA.draw_pixel(img, 7, 22, O); PA.draw_pixel(img, 16, 22, O)
 
 
 static func enemy_tank_sprite(img: Image) -> void:
-	PA.fill_rect(img, 10, 0, 4, 4, O)
-	PA.fill_rect(img, 34, 0, 4, 4, O)
-	PA.outlined_rect(img, 14, 2, 20, 8, M, O)
-	PA.fill_rect(img, 20, 4, 8, 2, H)
-	PA.outlined_rect(img, 6, 10, 36, 6, B, O)
-	PA.fill_rect(img, 12, 12, 24, 2, H)
-	PA.outlined_rect(img, 5, 16, 18, 22, M, O)
-	PA.fill_rect(img, 8, 19, 12, 16, H)
-	PA.outlined_rect(img, 14, 16, 20, 14, B, O)
-	PA.fill_rect(img, 18, 19, 12, 6, H)
-	PA.outlined_rect(img, 0, 16, 6, 10, M, O)
-	PA.outlined_rect(img, 42, 16, 6, 10, M, O)
-	PA.fill_rect(img, 0, 25, 6, 3, O)
-	PA.fill_rect(img, 42, 25, 6, 3, O)
-	PA.outlined_rect(img, 12, 30, 8, 14, S, O)
-	PA.outlined_rect(img, 28, 30, 8, 14, S, O)
-	PA.fill_rect(img, 10, 43, 12, 3, O)
-	PA.fill_rect(img, 26, 43, 12, 3, O)
-	PA.fill_rect(img, 10, 46, 28, 2, O)
+	# Hulking eldritch brute — massive body, thick carapace, heavy arms
+	# Body core
+	PA.fill_rect(img, 10, 6, 28, 22, M)
+	PA.fill_rect(img, 14, 4, 20, 4, M)
+	PA.fill_rect(img, 8, 10, 4, 14, M); PA.fill_rect(img, 36, 10, 4, 14, M)
+	# Outline body
+	PA.draw_h_line(img, 15, 3, 18, O); PA.draw_h_line(img, 11, 4, 4, O); PA.draw_h_line(img, 33, 4, 4, O)
+	PA.draw_h_line(img, 9, 5, 4, O); PA.draw_h_line(img, 35, 5, 4, O)
+	PA.draw_v_line(img, 8, 6, 18, O); PA.draw_v_line(img, 40, 6, 18, O)
+	PA.draw_h_line(img, 10, 28, 28, O)
+	# Carapace plates
+	PA.draw_h_line(img, 12, 8, 24, S); PA.draw_h_line(img, 12, 16, 24, S)
+	PA.draw_h_line(img, 14, 12, 20, H)
+	# Eyes — tiny, recessed
+	PA.fill_rect(img, 16, 9, 4, 3, B)
+	PA.fill_rect(img, 28, 9, 4, 3, B)
+	PA.draw_pixel(img, 17, 10, O); PA.draw_pixel(img, 29, 10, O)
+	# Mouth — mandibles
+	PA.draw_v_line(img, 22, 18, 4, O); PA.draw_v_line(img, 26, 18, 4, O)
+	PA.draw_h_line(img, 19, 21, 10, O)
+	PA.draw_pixel(img, 20, 19, O); PA.draw_pixel(img, 28, 19, O)
+	# Heavy arms
+	PA.fill_rect(img, 2, 12, 6, 8, S); PA.fill_rect(img, 40, 12, 6, 8, S)
+	PA.draw_v_line(img, 1, 13, 6, O); PA.draw_v_line(img, 47, 13, 6, O)
+	PA.draw_h_line(img, 0, 18, 3, O); PA.draw_h_line(img, 45, 18, 3, O)
+	PA.draw_pixel(img, 1, 19, H); PA.draw_pixel(img, 46, 19, H)
+	# Legs — thick pillars
+	PA.fill_rect(img, 14, 28, 6, 12, S); PA.fill_rect(img, 28, 28, 6, 12, S)
+	PA.draw_v_line(img, 13, 29, 10, O); PA.draw_v_line(img, 35, 29, 10, O)
+	PA.draw_v_line(img, 20, 29, 10, O); PA.draw_v_line(img, 28, 29, 10, O)
+	PA.fill_rect(img, 12, 38, 10, 4, O); PA.fill_rect(img, 26, 38, 10, 4, O)
+	PA.draw_h_line(img, 10, 42, 28, O)
 
 
 static func enemy_boss_sprite(img: Image) -> void:
-	PA.fill_rect(img, 30, 0, 2, 6, O)
-	PA.fill_rect(img, 40, 0, 2, 6, O)
-	PA.fill_rect(img, 35, 2, 2, 4, O)
-	PA.outlined_rect(img, 28, 4, 16, 6, M, O)
-	PA.fill_rect(img, 30, 6, 12, 2, H)
-	PA.outlined_rect(img, 26, 10, 20, 10, M, O)
-	PA.fill_rect(img, 30, 14, 4, 2, H)
-	PA.fill_rect(img, 38, 14, 4, 2, H)
-	PA.outlined_rect(img, 16, 20, 40, 8, S, O)
-	PA.fill_rect(img, 20, 22, 32, 4, H)
-	PA.fill_rect(img, 14, 20, 4, 8, O)
-	PA.fill_rect(img, 54, 20, 4, 8, O)
-	PA.outlined_rect(img, 24, 28, 24, 16, B, O)
-	PA.fill_rect(img, 30, 31, 12, 4, H)
-	PA.fill_rect(img, 32, 36, 8, 6, M)
-	PA.outlined_rect(img, 10, 28, 8, 16, M, O)
-	PA.outlined_rect(img, 54, 28, 8, 16, M, O)
-	PA.fill_rect(img, 8, 43, 12, 4, O)
-	PA.fill_rect(img, 52, 43, 12, 4, O)
-	PA.outlined_rect(img, 24, 44, 24, 4, O, O)
-	PA.fill_rect(img, 28, 45, 16, 2, H)
-	PA.outlined_rect(img, 22, 48, 8, 16, S, O)
-	PA.outlined_rect(img, 42, 48, 8, 16, S, O)
-	PA.outlined_rect(img, 20, 62, 10, 6, M, O)
-	PA.outlined_rect(img, 42, 62, 10, 6, M, O)
-	PA.fill_rect(img, 18, 68, 14, 4, O)
-	PA.fill_rect(img, 40, 68, 14, 4, O)
+	# Eldritch horror — massive asymmetrical body, crown of eyes, tentacles
+	# Crown/horns
+	PA.fill_rect(img, 20, 0, 8, 6, O)
+	PA.fill_rect(img, 44, 0, 8, 6, O)
+	PA.fill_rect(img, 32, 0, 8, 4, O)
+	PA.fill_rect(img, 30, 2, 12, 2, H)
+	PA.draw_v_line(img, 24, 3, 5, O); PA.draw_v_line(img, 48, 3, 5, O)
+	# Crown eyes
+	PA.fill_rect(img, 26, 1, 3, 3, B); PA.fill_rect(img, 43, 1, 3, 3, B)
+	PA.draw_pixel(img, 27, 2, O); PA.draw_pixel(img, 44, 2, O)
+	# Head
+	PA.fill_rect(img, 18, 6, 36, 16, M)
+	PA.fill_rect(img, 22, 4, 28, 4, M)
+	PA.draw_h_line(img, 23, 3, 26, O)
+	PA.draw_v_line(img, 17, 4, 16, O); PA.draw_v_line(img, 54, 4, 16, O)
+	PA.draw_h_line(img, 18, 22, 36, O)
+	# Main eyes — three large eyes
+	PA.fill_rect(img, 22, 9, 5, 4, B)
+	PA.fill_rect(img, 34, 8, 5, 5, B)
+	PA.fill_rect(img, 46, 9, 5, 4, B)
+	PA.draw_pixel(img, 24, 10, O); PA.draw_pixel(img, 36, 10, O); PA.draw_pixel(img, 48, 10, O)
+	# Mouth — gaping maw
+	PA.fill_rect(img, 26, 18, 20, 6, O)
+	PA.fill_rect(img, 28, 18, 16, 2, H)
+	PA.draw_pixel(img, 30, 20, B); PA.draw_pixel(img, 34, 20, B)
+	PA.draw_pixel(img, 38, 20, B); PA.draw_pixel(img, 42, 20, B)
+	# Body — massive torso
+	PA.fill_rect(img, 12, 24, 48, 24, S)
+	PA.fill_rect(img, 16, 23, 40, 4, M)
+	PA.draw_h_line(img, 13, 24, 46, O)
+	PA.draw_v_line(img, 11, 25, 22, O); PA.draw_v_line(img, 60, 25, 22, O)
+	PA.draw_h_line(img, 14, 48, 44, O)
+	# Body highlights
+	PA.fill_rect(img, 18, 27, 14, 16, M)
+	PA.fill_rect(img, 40, 27, 14, 16, M)
+	PA.fill_rect(img, 28, 30, 16, 12, H)
+	# Tentacles — bottom
+	for i in range(4):
+		var bx := 18 + i * 9
+		PA.draw_v_line(img, bx, 48, 8, O)
+		PA.draw_pixel(img, bx + 1, 50, O)
+		PA.draw_pixel(img, bx - 1, 52, O) if i % 2 == 0 else PA.draw_pixel(img, bx + 2, 52, O)
+	# Arms — massive claws
+	PA.fill_rect(img, 2, 26, 10, 14, S); PA.fill_rect(img, 60, 26, 10, 14, S)
+	PA.draw_v_line(img, 1, 27, 12, O); PA.draw_v_line(img, 71, 27, 12, O)
+	PA.draw_h_line(img, 0, 33, 4, O); PA.draw_h_line(img, 68, 33, 4, O)
+	PA.draw_pixel(img, 0, 38, O); PA.draw_pixel(img, 72, 38, O)
+	PA.draw_v_line(img, 12, 28, 4, O); PA.draw_v_line(img, 60, 28, 4, O)
+	# Legs — thick
+	PA.fill_rect(img, 22, 56, 10, 12, S); PA.fill_rect(img, 40, 56, 10, 12, S)
+	PA.draw_v_line(img, 21, 57, 10, O); PA.draw_v_line(img, 50, 57, 10, O)
+	PA.draw_v_line(img, 32, 57, 10, O); PA.draw_v_line(img, 40, 57, 10, O)
+	PA.fill_rect(img, 20, 67, 14, 4, O); PA.fill_rect(img, 38, 67, 14, 4, O)
 
 
 static func bullet_sprite(img: Image) -> void:
