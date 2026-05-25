@@ -24,9 +24,8 @@ var _hit_bodies: Array[Node] = []  # Track pierced-through enemies
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	var sprite: Sprite2D = $Sprite
-	sprite.texture = PA.generate_sprite(8, 8, ST.bullet_sprite)
+	sprite.texture = PA.generate_sprite(16, 16, ST.bullet_sprite, [PA.MATERIAL_ENERGY])
 	sprite.self_modulate = Color(1.0, 0.8, 0.2)
-	sprite.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
 
 
 func _physics_process(delta: float) -> void:

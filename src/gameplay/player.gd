@@ -24,29 +24,40 @@ var dodge_override_velocity: Vector2 = Vector2.ZERO
 @onready var right_leg: Sprite2D = $RightLeg
 var _upgrade_applier: UpgradeApplier
 
+# Animation state
+var _player_frames: Array[ImageTexture] = []
+var _anim_frame: int = 0
+var _anim_timer: float = 0.0
+const ANIM_INTERVAL: float = 0.4
+
 
 func _ready() -> void:
 	add_to_group("players")
 	_upgrade_applier = get_node("/root/Main/Systems/UpgradeApplier") as UpgradeApplier
 	EventBus.player_dealt_damage.connect(_on_player_dealt_damage)
-	sprite.texture = PA.generate_sprite(24, 24, ST.player_sprite)
+
+	sprite.texture = PA.generate_sprite(48, 48, ST.player_sprite, [PA.MATERIAL_FLESH])
 	sprite.self_modulate = Color(0.3, 0.7, 1.0)
-	sprite.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
-	weapon_sprite.texture = PA.generate_sprite(12, 8, ST.gun_sprite)
+
+	weapon_sprite.texture = PA.generate_sprite(24, 16, ST.gun_sprite, [PA.MATERIAL_METAL])
 	weapon_sprite.self_modulate = Color(0.8, 0.6, 0.3)
-	weapon_sprite.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
+
 	# Limbs
-	var limb_tex := PA.generate_sprite(2, 8, ST.arm_stick_sprite)
-	var leg_tex := PA.generate_sprite(2, 8, ST.leg_stick_sprite)
-	var limb_scale := Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
+	var limb_tex := PA.generate_sprite(4, 16, ST.arm_stick_sprite, [PA.MATERIAL_FLESH])
+	var leg_tex := PA.generate_sprite(4, 16, ST.leg_stick_sprite, [PA.MATERIAL_FLESH])
 	for limb in [left_arm, right_arm]:
 		limb.texture = limb_tex
 		limb.self_modulate = Color(0.2, 0.6, 0.9)
-		limb.scale = limb_scale
 	for limb in [left_leg, right_leg]:
 		limb.texture = leg_tex
 		limb.self_modulate = Color(0.2, 0.5, 0.8)
-		limb.scale = limb_scale
+
+	# Animation: 3-frame breathing cycle
+	_player_frames = PA.generate_animated_frames(
+		[ST.player_sprite, ST.player_sprite_idle_breath_in, ST.player_sprite_idle_breath_out],
+		48, 48,
+		[PA.MATERIAL_FLESH]
+	)
 
 
 var _walk_cycle: float = 0.0
@@ -59,6 +70,14 @@ func _physics_process(delta: float) -> void:
 		for limb in [left_arm, right_arm, left_leg, right_leg]:
 			limb.visible = false
 		return
+
+	# Idle breathing animation
+	if _player_frames.size() > 0:
+		_anim_timer += delta
+		if _anim_timer >= ANIM_INTERVAL:
+			_anim_timer -= ANIM_INTERVAL
+			_anim_frame = (_anim_frame + 1) % _player_frames.size()
+			sprite.texture = _player_frames[_anim_frame]
 
 	# aim_direction is set by CombatSystem (auto-aim).
 	weapon_sprite.rotation = aim_direction.angle()
@@ -115,10 +134,10 @@ func take_damage(amount: int, damage_type: String, source: Node, knockback_value
 ## Update weapon sprite to match the given weapon type.
 func update_weapon_visual(weapon_type: String) -> void:
 	if weapon_type == "melee":
-		weapon_sprite.texture = PA.generate_sprite(8, 16, ST.sword_sprite)
+		weapon_sprite.texture = PA.generate_sprite(16, 32, ST.sword_sprite, [PA.MATERIAL_METAL])
 		weapon_sprite.self_modulate = Color(0.8, 0.7, 0.5)
 	else:
-		weapon_sprite.texture = PA.generate_sprite(12, 8, ST.gun_sprite)
+		weapon_sprite.texture = PA.generate_sprite(24, 16, ST.gun_sprite, [PA.MATERIAL_METAL])
 		weapon_sprite.self_modulate = Color(0.8, 0.6, 0.3)
 
 

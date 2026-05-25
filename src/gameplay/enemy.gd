@@ -20,6 +20,10 @@ enum BossPhase { PHASE_1, PHASE_2 }
 @onready var sprite: Sprite2D = $Sprite
 
 var _base_scale: float = 1.0
+var _anim_frames: Array[ImageTexture] = []
+var _anim_frame: int = 0
+var _anim_timer: float = 0.0
+var _anim_interval: float = 0.75
 var _player: Player
 var _contact_timer: float = -0.3
 var _is_ranged: bool = false
@@ -87,17 +91,17 @@ func _ready() -> void:
 
 		# Generate pixel art sprite based on type
 		if _is_boss:
-			sprite.texture = PA.generate_sprite(72, 72, ST.enemy_boss_sprite)
+			sprite.texture = PA.generate_sprite(144, 144, ST.enemy_boss_sprite, [PA.MATERIAL_FLESH])
 		elif _is_tank:
-			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_tank_sprite)
+			sprite.texture = PA.generate_sprite(96, 96, ST.enemy_tank_sprite, [PA.MATERIAL_METAL])
 		elif _is_exploder:
-			sprite.texture = PA.generate_sprite(24, 24, ST.enemy_exploder_sprite)
+			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_exploder_sprite, [PA.MATERIAL_FLESH])
 		elif _is_charger:
-			sprite.texture = PA.generate_sprite(24, 24, ST.enemy_charger_sprite)
+			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_charger_sprite, [PA.MATERIAL_FLESH])
 		elif _is_ranged:
-			sprite.texture = PA.generate_sprite(24, 24, ST.enemy_ranged_sprite)
+			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_ranged_sprite, [PA.MATERIAL_FLESH])
 		else:
-			sprite.texture = PA.generate_sprite(24, 24, ST.enemy_melee_sprite)
+			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_melee_sprite, [PA.MATERIAL_FLESH])
 
 		if enemy_data.is_elite:
 			_base_scale = enemy_data.elite_scale
@@ -124,13 +128,50 @@ func _ready() -> void:
 			sprite.self_modulate = Color(0.3, 0.7, 1.0)
 			_base_scale = 1.0
 
-	_base_scale *= GameConfig.SPRITE_SCALE
 	sprite.scale = Vector2(_base_scale, _base_scale)
 
 	health.died.connect(_on_death)
 	_find_player()
 	_bullet_scene = load("res://scenes/bullet.tscn") as PackedScene
 	_spawn_timer = 0.3
+
+	# Build idle animation frame array
+	if _is_boss:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_boss_sprite, ST.enemy_boss_sprite_idle_1, ST.enemy_boss_sprite_idle_2],
+			144, 144, [PA.MATERIAL_FLESH]
+		)
+		_anim_interval = 0.67
+	elif _is_tank:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_tank_sprite, ST.enemy_tank_sprite_blink],
+			96, 96, [PA.MATERIAL_METAL]
+		)
+		_anim_interval = 0.75
+	elif _is_exploder:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_exploder_sprite, ST.enemy_exploder_sprite_blink],
+			48, 48, [PA.MATERIAL_FLESH]
+		)
+		_anim_interval = 0.75
+	elif _is_charger:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_charger_sprite, ST.enemy_charger_sprite_blink],
+			48, 48, [PA.MATERIAL_FLESH]
+		)
+		_anim_interval = 0.75
+	elif _is_ranged:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_ranged_sprite, ST.enemy_ranged_sprite_blink],
+			48, 48, [PA.MATERIAL_FLESH]
+		)
+		_anim_interval = 0.75
+	else:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_melee_sprite, ST.enemy_melee_sprite_blink],
+			48, 48, [PA.MATERIAL_FLESH]
+		)
+		_anim_interval = 0.75
 
 	if _is_charger:
 		_c_cooldown_timer = randf_range(3.0, 5.0)
@@ -144,6 +185,14 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not health.is_alive():
 		return
+
+	# Idle animation
+	if _anim_frames.size() > 0 and sprite.visible:
+		_anim_timer += delta
+		if _anim_timer >= _anim_interval:
+			_anim_timer -= _anim_interval
+			_anim_frame = (_anim_frame + 1) % _anim_frames.size()
+			sprite.texture = _anim_frames[_anim_frame]
 
 	if _is_knocked_back:
 		_process_knockback(delta)

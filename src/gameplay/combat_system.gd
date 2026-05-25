@@ -28,6 +28,7 @@ const ST = preload("res://src/visuals/sprite_templates.gd")
 
 # References
 @onready var player: Player = _find_player()
+@onready var _hitstop: Node = $"../Hitstop"
 @onready var input_buffer: Node = $"../InputBuffer"
 var _upgrade_applier: UpgradeApplier
 var _bullet_scene: PackedScene = preload("res://scenes/bullet.tscn")
@@ -343,11 +344,10 @@ func _flash_player_melee() -> void:
 
 func _spawn_slash_effect(direction: Vector2, radius: float, angle_deg: float) -> void:
 	var fx := Sprite2D.new()
-	fx.texture = PA.generate_sprite(int(radius), int(radius), ST.slash_arc_sprite)
+	fx.texture = PA.generate_sprite(int(radius), int(radius), ST.slash_arc_sprite, [PA.MATERIAL_ENERGY])
 	fx.self_modulate = Color(1.0, 1.0, 1.0, 0.6)
 	fx.rotation = direction.angle() - deg_to_rad(angle_deg / 2.0)
 	fx.global_position = player.global_position
-	fx.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
 	_effects_container.add_child(fx)
 	var tw := fx.create_tween()
 	tw.tween_property(fx, "scale", Vector2(1.2, 1.2), 0.15)
@@ -357,11 +357,10 @@ func _spawn_slash_effect(direction: Vector2, radius: float, angle_deg: float) ->
 
 func _spawn_muzzle_flash(direction: Vector2) -> void:
 	var fx := Sprite2D.new()
-	fx.texture = PA.generate_sprite(10, 10, ST.muzzle_flash_sprite)
+	fx.texture = PA.generate_sprite(20, 20, ST.muzzle_flash_sprite, [PA.MATERIAL_ENERGY])
 	fx.self_modulate = Color(1.0, 0.9, 0.2, 0.8)
 	fx.rotation = direction.angle()
 	fx.global_position = player.global_position + direction * 30.0
-	fx.scale = Vector2(GameConfig.SPRITE_SCALE, GameConfig.SPRITE_SCALE)
 	_effects_container.add_child(fx)
 	var tw := fx.create_tween()
 	tw.tween_property(fx, "self_modulate", Color(1.0, 0.5, 0.0, 0.0), 0.08)
