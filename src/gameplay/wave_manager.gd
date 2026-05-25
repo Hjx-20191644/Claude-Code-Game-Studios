@@ -192,6 +192,8 @@ func _count_living_enemies() -> int:
 	for e in get_tree().get_nodes_in_group("enemies"):
 		if not is_instance_valid(e):
 			continue
+		if e.is_queued_for_deletion():
+			continue
 		if e.has_node("HealthComponent"):
 			var hc = e.get_node("HealthComponent")
 			if hc.has_method("is_alive") and not hc.is_alive():
