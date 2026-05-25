@@ -53,6 +53,8 @@ func _ready() -> void:
 	EventBus.player_died.connect(_on_player_died)
 	EventBus.wave_started.connect(_on_wave_started)
 	EventBus.vfx_requested.connect(_on_vfx_requested)
+	EventBus.boss_spawned.connect(_on_boss_spawned)
+	EventBus.boss_killed.connect(_on_boss_killed)
 
 
 # --- Hit particles ---
@@ -65,9 +67,12 @@ func _on_damage_dealt(amount: float, hit_position: Vector2, attack_type: String)
 		"melee":
 			_emit_burst(hit_position, melee_hit_count, Color.WHITE,
 				melee_hit_speed_min, melee_hit_speed_max, melee_hit_lifetime, 8.0)
+			_screen_shake(2.0, 0.06)
 		"ranged":
 			_emit_burst(hit_position, ranged_hit_count, Color.ORANGE,
 				ranged_hit_speed_min, ranged_hit_speed_max, ranged_hit_lifetime, 6.0)
+		"explosion":
+			_screen_shake(5.0, 0.15)
 
 
 # --- Player damage ---
@@ -76,7 +81,7 @@ func _on_damage_taken(_amount: float, _position: Vector2) -> void:
 	if _is_dead:
 		return
 	_player_flash()
-	_screen_shake()
+	_screen_shake(shake_intensity, shake_duration)
 	_show_vignette()
 
 
@@ -95,9 +100,11 @@ func _player_flash() -> void:
 	_flash_tween.tween_property(sprite, "modulate", Color.WHITE, hit_flash_duration)
 
 
-func _screen_shake() -> void:
+func _screen_shake(intensity: float = -1.0, duration: float = -1.0) -> void:
 	if not _camera:
 		return
+	var si := intensity if intensity >= 0.0 else shake_intensity
+	var sd := duration if duration >= 0.0 else shake_duration
 
 	if _shake_tween and _shake_tween.is_valid():
 		_shake_tween.kill()
@@ -105,10 +112,10 @@ func _screen_shake() -> void:
 	_camera.offset = Vector2.ZERO
 	_shake_tween = create_tween()
 	var steps := 8
-	var step_dur := shake_duration / float(steps)
+	var step_dur := sd / float(steps)
 	for _i in steps:
-		var rx := randf_range(-shake_intensity, shake_intensity)
-		var ry := randf_range(-shake_intensity, shake_intensity)
+		var rx := randf_range(-si, si)
+		var ry := randf_range(-si, si)
 		_shake_tween.tween_property(_camera, "offset", Vector2(rx, ry), step_dur)
 	_shake_tween.tween_property(_camera, "offset", Vector2.ZERO, 0.0)
 
@@ -188,6 +195,18 @@ func _on_wave_started(wave_number: int) -> void:
 			_camera.offset = Vector2.ZERO
 
 
+# --- Boss events ---
+
+func _on_boss_spawned(_boss_name: String, _max_hp: int) -> void:
+	_screen_shake(8.0, 0.3)
+
+
+func _on_boss_killed(_boss_name: String) -> void:
+	_screen_shake(12.0, 0.5)
+	if _player:
+		_emit_burst(_player.global_position, 30, Color(1.0, 0.84, 0.0), 80.0, 300.0, 0.7, 10.0)
+
+
 # --- Particle helpers ---
 
 func _emit_burst(origin: Vector2, count: int, color: Color,
@@ -241,6 +260,7 @@ func _on_vfx_requested(effect_name: String, position: Vector2) -> void:
 	match effect_name:
 		"explosion":
 			_emit_burst(position, 20, Color(1.0, 0.5, 0.0), 100.0, 250.0, 0.5, 10.0)
+			_screen_shake(5.0, 0.15)
 
 
 func _find_camera() -> Camera2D:
