@@ -360,7 +360,7 @@ func _spawn_muzzle_flash(direction: Vector2) -> void:
 	fx.texture = PA.generate_sprite(20, 20, ST.muzzle_flash_sprite, [PA.MATERIAL_ENERGY])
 	fx.self_modulate = Color(1.0, 0.9, 0.2, 0.8)
 	fx.rotation = direction.angle()
-	fx.global_position = player.global_position + direction * 30.0
+	fx.global_position = player.global_position + direction * 22.0
 	_effects_container.add_child(fx)
 	var tw := fx.create_tween()
 	tw.tween_property(fx, "self_modulate", Color(1.0, 0.5, 0.0, 0.0), 0.08)

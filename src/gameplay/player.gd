@@ -81,7 +81,7 @@ func _physics_process(delta: float) -> void:
 
 	# aim_direction is set by CombatSystem (auto-aim).
 	weapon_sprite.rotation = aim_direction.angle()
-	weapon_sprite.position = aim_direction * 24.0
+	weapon_sprite.position = aim_direction * 18.0
 
 	# Limb animation
 	_animate_limbs(delta)
@@ -192,7 +192,7 @@ func _apply_damage_aura(damage: float) -> void:
 		if not is_instance_valid(e):
 			continue
 		var enemy := e as Node2D
-		if enemy and enemy.global_position.distance_to(global_position) <= 120.0:
+		if enemy and enemy.global_position.distance_to(global_position) <= 90.0:
 			if enemy.has_method("take_damage"):
 				enemy.take_damage(dmg, "aura", self, 0.0)
 				EventBus.player_dealt_damage.emit(dmg)

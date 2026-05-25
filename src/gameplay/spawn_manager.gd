@@ -4,8 +4,8 @@ class_name SpawnManager
 ## Enemy spawn system: creates enemies at valid positions around the player.
 ## Stateless — each spawn_enemies() call is independent.
 
-@export var spawn_min_distance: float = 200.0
-@export var spawn_max_distance: float = 400.0
+@export var spawn_min_distance: float = 150.0
+@export var spawn_max_distance: float = 300.0
 @export var spawn_angle_spread: float = 30.0
 @export var max_spawn_retries: int = 3
 
@@ -125,7 +125,7 @@ func _clamp_to_arena(pos: Vector2) -> Vector2:
 
 
 func _get_arena_rect() -> Rect2:
-	return Rect2(140, 60, GameConfig.ARENA_WIDTH, GameConfig.ARENA_HEIGHT)
+	return Rect2(105, 45, GameConfig.ARENA_WIDTH, GameConfig.ARENA_HEIGHT)
 
 
 func _find_player() -> Player:

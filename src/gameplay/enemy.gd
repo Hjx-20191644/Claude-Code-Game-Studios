@@ -421,7 +421,7 @@ func _process_exploder(delta: float) -> void:
 		ExploderState.RUSHING:
 			if _player:
 				var dist := global_position.distance_to(_player.global_position)
-				if dist <= 40.0:
+				if dist <= 30.0:
 					_enter_exploder(ExploderState.WARNING)
 				else:
 					var dir := (_player.global_position - global_position).normalized()
@@ -444,7 +444,7 @@ func _enter_exploder(new_state: ExploderState) -> void:
 			_e_warning_timer = 0.35
 			sprite.self_modulate = Color(2.0, 2.0, 2.0)
 		ExploderState.EXPLODING:
-			_explode(80.0, 25)
+			_explode(60.0, 25)
 			queue_free()
 		ExploderState.RUSHING:
 			sprite.visible = true
@@ -475,7 +475,7 @@ func _fire_bullet() -> void:
 		return
 	var bullet := _bullet_scene.instantiate() as Bullet
 	var dir := (_player.global_position - global_position).normalized()
-	bullet.global_position = global_position + dir * 16.0
+	bullet.global_position = global_position + dir * 12.0
 	bullet.direction = dir
 	bullet.damage = _ed("bullet_damage", 10)
 	bullet.speed = _ed("bullet_speed", 250.0)
@@ -537,13 +537,13 @@ func _on_death() -> void:
 	if _is_boss:
 		EventBus.boss_killed.emit(enemy_data.enemy_name if enemy_data else "Boss")
 	if _is_exploder:
-		_explode(80.0, 25)
+		_explode(60.0, 25)
 	# Kill explosion upgrade
 	var ua := get_node_or_null("/root/Main/Systems/UpgradeApplier")
 	if ua:
 		var kill_dmg: float = ua.get_absolute("kill_explosion_damage")
 		if kill_dmg > 0.0:
-			_explode(80.0, int(kill_dmg))
+			_explode(60.0, int(kill_dmg))
 	queue_free()
 
 
@@ -606,7 +606,7 @@ func _process_boss(delta: float) -> void:
 		BossState.SLAM:
 			var sw := _ed("slam_windup", 0.5)
 			if sw > 0.0:
-				_explode(_ed("slam_radius", 120.0), int(_ed("slam_damage", 30)))
+				_explode(_ed("slam_radius", 90.0), int(_ed("slam_damage", 30)))
 			EventBus.vfx_requested.emit("explosion", global_position)
 			_boss_has_slammed = true
 			_enter_boss(BossState.STUN)

@@ -79,7 +79,7 @@ func _build_ui() -> void:
 	var title := Label.new()
 	title.text = "Select Weapons"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 32)
+	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", Color(0.3, 0.7, 1.0))
 	panel.add_child(title)
 
@@ -98,7 +98,7 @@ func _build_ui() -> void:
 	var left_label := Label.new()
 	left_label.text = "Left Hand (Melee/Ranged)"
 	left_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	left_label.add_theme_font_size_override("font_size", 16)
+	left_label.add_theme_font_size_override("font_size", 12)
 	left_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.7))
 	left_col.add_child(left_label)
 
@@ -107,7 +107,7 @@ func _build_ui() -> void:
 
 	_left_stats = Label.new()
 	_left_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_left_stats.add_theme_font_size_override("font_size", 13)
+	_left_stats.add_theme_font_size_override("font_size", 10)
 	_left_stats.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 0.8))
 	left_col.add_child(_left_stats)
 
@@ -120,7 +120,7 @@ func _build_ui() -> void:
 	var right_label := Label.new()
 	right_label.text = "Right Hand (Melee/Ranged)"
 	right_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	right_label.add_theme_font_size_override("font_size", 16)
+	right_label.add_theme_font_size_override("font_size", 12)
 	right_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.7))
 	right_col.add_child(right_label)
 
@@ -129,7 +129,7 @@ func _build_ui() -> void:
 
 	_right_stats = Label.new()
 	_right_stats.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_right_stats.add_theme_font_size_override("font_size", 13)
+	_right_stats.add_theme_font_size_override("font_size", 10)
 	_right_stats.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 0.8))
 	right_col.add_child(_right_stats)
 
@@ -146,14 +146,14 @@ func _build_ui() -> void:
 
 	var back_btn := Button.new()
 	back_btn.text = "Back"
-	back_btn.add_theme_font_size_override("font_size", 20)
+	back_btn.add_theme_font_size_override("font_size", 16)
 	back_btn.custom_minimum_size = Vector2(140, 44)
 	back_btn.pressed.connect(_on_back)
 	btns.add_child(back_btn)
 
 	var start_btn := Button.new()
 	start_btn.text = "Start Game"
-	start_btn.add_theme_font_size_override("font_size", 20)
+	start_btn.add_theme_font_size_override("font_size", 16)
 	start_btn.custom_minimum_size = Vector2(180, 44)
 	start_btn.pressed.connect(_on_start)
 	btns.add_child(start_btn)
@@ -171,7 +171,7 @@ func _build_dropdown(on_select: Callable) -> Control:
 	var btn := Button.new()
 	btn.name = "TriggerBtn"
 	btn.text = ""
-	btn.add_theme_font_size_override("font_size", 16)
+	btn.add_theme_font_size_override("font_size", 12)
 	btn.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
 	btn.mouse_filter = MOUSE_FILTER_STOP
 	btn.pressed.connect(func():
@@ -242,7 +242,7 @@ func _build_dropdown(on_select: Callable) -> Control:
 		var row := Button.new()
 		row.text = "%s [%s]" % [w.weapon_name, _type_icon(w.weapon_type)]
 		row.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		row.add_theme_font_size_override("font_size", 14)
+		row.add_theme_font_size_override("font_size", 10)
 		row.add_theme_stylebox_override("normal", item_style)
 		row.add_theme_stylebox_override("hover", hover_style)
 		row.custom_minimum_size = Vector2(200, 28)

@@ -6,9 +6,9 @@ class_name UpgradeUI
 
 enum State { INACTIVE, SHOWING, SELECTING, CONFIRMED }
 
-@export var card_width: float = 220.0
-@export var card_height: float = 300.0
-@export var card_gap: float = 28.0
+@export var card_width: float = 165.0
+@export var card_height: float = 225.0
+@export var card_gap: float = 21.0
 @export var slide_in_duration: float = 0.35
 @export var select_anim_duration: float = 0.25
 @export var exit_anim_duration: float = 0.2
@@ -161,14 +161,14 @@ func _build_card(data: UpgradeData, index: int) -> PanelContainer:
 	stars_label.text = _rarity_stars(data.rarity)
 	stars_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	stars_label.add_theme_color_override("font_color", _rarity_color(data.rarity))
-	stars_label.add_theme_font_size_override("font_size", 14)
+	stars_label.add_theme_font_size_override("font_size", 11)
 	vbox.add_child(stars_label)
 
 	# Name
 	var name_label := Label.new()
 	name_label.text = data.display_name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 18)
+	name_label.add_theme_font_size_override("font_size", 11)
 	name_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.95))
 	vbox.add_child(name_label)
 
@@ -188,7 +188,7 @@ func _build_card(data: UpgradeData, index: int) -> PanelContainer:
 	desc_label.text = data.description
 	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	desc_label.add_theme_font_size_override("font_size", 13)
+	desc_label.add_theme_font_size_override("font_size", 8)
 	desc_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	vbox.add_child(desc_label)
 
@@ -198,7 +198,7 @@ func _build_card(data: UpgradeData, index: int) -> PanelContainer:
 	var max_s := data.max_stacks
 	stacks_label.text = "Stack: %d/%d" % [current, max_s] if max_s > 0 else ""
 	stacks_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stacks_label.add_theme_font_size_override("font_size", 12)
+	stacks_label.add_theme_font_size_override("font_size", 9)
 	stacks_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 0.8))
 	vbox.add_child(stacks_label)
 
@@ -206,7 +206,7 @@ func _build_card(data: UpgradeData, index: int) -> PanelContainer:
 	var key_hint := Label.new()
 	key_hint.text = "[%d]" % (index + 1)
 	key_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	key_hint.add_theme_font_size_override("font_size", 22)
+	key_hint.add_theme_font_size_override("font_size", 16)
 	key_hint.add_theme_color_override("font_color", _rarity_color(data.rarity))
 	vbox.add_child(key_hint)
 
@@ -231,7 +231,7 @@ func _make_tag_chip(tag: String) -> Control:
 
 	var inner := Label.new()
 	inner.text = tag
-	inner.add_theme_font_size_override("font_size", 10)
+	inner.add_theme_font_size_override("font_size", 8)
 	inner.add_theme_color_override("font_color", Color(0.1, 0.1, 0.1, 0.9))
 	container.add_child(inner)
 	return container
@@ -321,17 +321,17 @@ func _build_ui() -> void:
 	_title_label = Label.new()
 	_title_label.text = "Choose an Upgrade"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title_label.add_theme_font_size_override("font_size", 28)
+	_title_label.add_theme_font_size_override("font_size", 16)
 	_title_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.9))
 	_title_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
-	_title_label.position.y = 50.0
+	_title_label.position.y = 38.0
 	add_child(_title_label)
 
 	# Timeout bar
 	_timer_bar = ColorRect.new()
 	_timer_bar.color = Color(1.0, 0.3, 0.3, 0.6)
-	_timer_bar.size = Vector2(300, 4)
-	_timer_bar.position = Vector2(490, 90)
+	_timer_bar.size = Vector2(225, 3)
+	_timer_bar.position = Vector2(368, 68)
 	add_child(_timer_bar)
 
 	# Cards
@@ -347,7 +347,7 @@ func _build_ui() -> void:
 	_acquired_list = VBoxContainer.new()
 	_acquired_list.add_theme_constant_override("separation", 2)
 	_acquired_list.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT, Control.PRESET_MODE_KEEP_SIZE, 20)
-	_acquired_list.position = Vector2(16.0, -16.0)
+	_acquired_list.position = Vector2(12.0, -12.0)
 	add_child(_acquired_list)
 
 
@@ -357,7 +357,7 @@ func _refresh_acquired_list() -> void:
 
 	var label := Label.new()
 	label.text = "Acquired:"
-	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_font_size_override("font_size", 11)
 	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.6))
 	_acquired_list.add_child(label)
 
@@ -365,7 +365,7 @@ func _refresh_acquired_list() -> void:
 	if acquired.is_empty():
 		var empty := Label.new()
 		empty.text = "  (none)"
-		empty.add_theme_font_size_override("font_size", 12)
+		empty.add_theme_font_size_override("font_size", 9)
 		empty.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.3))
 		_acquired_list.add_child(empty)
 	else:
@@ -374,7 +374,7 @@ func _refresh_acquired_list() -> void:
 			var entry := Label.new()
 			var display_name: String = _upgrade_names.get(upgrade_id, upgrade_id)
 			entry.text = "  %s x%d" % [display_name, stacks]
-			entry.add_theme_font_size_override("font_size", 12)
+			entry.add_theme_font_size_override("font_size", 9)
 			entry.add_theme_color_override("font_color", Color(0.8, 0.8, 1.0, 0.7))
 			_acquired_list.add_child(entry)
 
@@ -393,10 +393,10 @@ func _make_card_style(rarity: int) -> StyleBoxFlat:
 	style.corner_radius_top_right = 0
 	style.corner_radius_bottom_left = 0
 	style.corner_radius_bottom_right = 0
-	style.content_margin_left = 14
-	style.content_margin_right = 14
-	style.content_margin_top = 14
-	style.content_margin_bottom = 14
+	style.content_margin_left = 10
+	style.content_margin_right = 10
+	style.content_margin_top = 10
+	style.content_margin_bottom = 10
 	return style
 
 

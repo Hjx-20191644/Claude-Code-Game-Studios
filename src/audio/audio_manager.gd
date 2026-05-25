@@ -122,7 +122,7 @@ func _mix(layers: Array[PackedByteArray]) -> PackedByteArray:
 func _play_layered(layers: Array) -> void:
 	var data_array: Array[PackedByteArray] = []
 	for entry in layers:
-		var gen_name := "_gen_" + entry[0]
+		var gen_name: String = "_gen_" + entry[0]
 		var params: Array = entry[1]
 		var data: PackedByteArray = callv(gen_name, params)
 		if data.size() > 0:

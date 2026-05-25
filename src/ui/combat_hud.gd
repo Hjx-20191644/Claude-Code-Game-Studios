@@ -4,13 +4,13 @@ class_name CombatHUD
 ## In-game HUD: health bar, ammo, dodge, score, wave, kills, wave announce.
 ## World-space elements track player; screen-space elements use anchors.
 
-@export var health_bar_width: float = 40.0
-@export var health_bar_height: float = 4.0
-@export var health_bar_offset_y: float = -28.0
+@export var health_bar_width: float = 30.0
+@export var health_bar_height: float = 3.0
+@export var health_bar_offset_y: float = -21.0
 @export var health_bar_tween_duration: float = 0.2
-@export var hud_margin: float = 20.0
+@export var hud_margin: float = 15.0
 @export var wave_announce_duration: float = 2.0
-@export var wave_announce_font_size: int = 48
+@export var wave_announce_font_size: int = 36
 
 var _player: Player
 var _health_bar: ColorRect
@@ -102,7 +102,7 @@ func _update_health_bar() -> void:
 
 func _build_dodge_indicator() -> void:
 	_dodge_dot = ColorRect.new()
-	_dodge_dot.size = Vector2(8, 8)
+	_dodge_dot.size = Vector2(6, 6)
 	_dodge_dot.color = Color(0.3, 0.7, 1.0, 0.9)
 	add_child(_dodge_dot)
 
@@ -112,7 +112,7 @@ func _update_dodge() -> void:
 		return
 
 	var screen_pos := _world_to_screen(_player.global_position)
-	_dodge_dot.position = screen_pos + Vector2(-30, 10)
+	_dodge_dot.position = screen_pos + Vector2(-22, 8)
 
 	var ratio := _dodge_system.get_cooldown_ratio()
 	if ratio >= 1.0:
@@ -132,7 +132,7 @@ func _build_score_labels() -> void:
 	_score_label = Label.new()
 	_score_label.text = "0"
 	_score_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_score_label.add_theme_font_size_override("font_size", 20)
+	_score_label.add_theme_font_size_override("font_size", 13)
 	_score_label.add_theme_color_override("font_color", Color.WHITE)
 	_score_label.position = Vector2(hud_margin, hud_margin)
 	add_child(_score_label)
@@ -141,27 +141,27 @@ func _build_score_labels() -> void:
 	_wave_label = Label.new()
 	_wave_label.text = "Wave 0"
 	_wave_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_wave_label.add_theme_font_size_override("font_size", 16)
+	_wave_label.add_theme_font_size_override("font_size", 13)
 	_wave_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.7))
-	_wave_label.position = Vector2(hud_margin, hud_margin + 28)
+	_wave_label.position = Vector2(hud_margin, hud_margin + 22)
 	add_child(_wave_label)
 
 	# Kills
 	_kills_label = Label.new()
 	_kills_label.text = "Kills: 0"
 	_kills_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_kills_label.add_theme_font_size_override("font_size", 14)
+	_kills_label.add_theme_font_size_override("font_size", 11)
 	_kills_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.5))
-	_kills_label.position = Vector2(hud_margin, hud_margin + 48)
+	_kills_label.position = Vector2(hud_margin, hud_margin + 38)
 	add_child(_kills_label)
 
 	# Shards
 	_shard_label = Label.new()
 	_shard_label.text = "Shards: 0"
 	_shard_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	_shard_label.add_theme_font_size_override("font_size", 14)
+	_shard_label.add_theme_font_size_override("font_size", 11)
 	_shard_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 0.8))
-	_shard_label.position = Vector2(hud_margin, hud_margin + 68)
+	_shard_label.position = Vector2(hud_margin, hud_margin + 54)
 	add_child(_shard_label)
 
 

@@ -3,9 +3,9 @@ class_name BossHealthBar
 
 ## Screen-top boss health bar. Listens to EventBus boss signals.
 
-@export var bar_width: float = 300.0
-@export var bar_height: float = 16.0
-@export var margin_top: float = 12.0
+@export var bar_width: float = 225.0
+@export var bar_height: float = 12.0
+@export var margin_top: float = 9.0
 
 var _container: Control
 var _name_label: Label
@@ -39,7 +39,7 @@ func _build() -> void:
 	# Boss name
 	_name_label = Label.new()
 	_name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_name_label.add_theme_font_size_override("font_size", 18)
+	_name_label.add_theme_font_size_override("font_size", 14)
 	_name_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.15))
 	_name_label.size = Vector2(bar_width, 24)
 	_container.add_child(_name_label)
@@ -61,7 +61,7 @@ func _build() -> void:
 	# Phase label
 	_phase_label = Label.new()
 	_phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_phase_label.add_theme_font_size_override("font_size", 13)
+	_phase_label.add_theme_font_size_override("font_size", 10)
 	_phase_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3))
 	_phase_label.size = Vector2(bar_width, 20)
 	_phase_label.position = Vector2(0, 48)

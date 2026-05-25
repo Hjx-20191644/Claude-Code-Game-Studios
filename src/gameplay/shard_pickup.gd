@@ -5,9 +5,9 @@ const ST = preload("res://src/visuals/sprite_templates.gd")
 
 var value: int = 1
 var _player: Node2D
-var _attract_radius: float = 100.0
+var _attract_radius: float = 75.0
 var _attract_speed: float = 300.0
-var _collect_radius: float = 16.0
+var _collect_radius: float = 12.0
 
 
 func _ready() -> void:

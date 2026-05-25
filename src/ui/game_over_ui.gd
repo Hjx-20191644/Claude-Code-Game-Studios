@@ -54,12 +54,12 @@ func _build_ui() -> void:
 	add_child(center)
 
 	var panel := VBoxContainer.new()
-	panel.add_theme_constant_override("separation", 16)
+	panel.add_theme_constant_override("separation", 12)
 
 	_title_label = Label.new()
 	_title_label.text = "Hunt Over"
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title_label.add_theme_font_size_override("font_size", 36)
+	_title_label.add_theme_font_size_override("font_size", 28)
 	_title_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
 	panel.add_child(_title_label)
 
@@ -80,7 +80,7 @@ func _build_ui() -> void:
 	_shard_label = Label.new()
 	_shard_label.text = "Shards Earned: 0"
 	_shard_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_shard_label.add_theme_font_size_override("font_size", 22)
+	_shard_label.add_theme_font_size_override("font_size", 16)
 	_shard_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 0.95))
 	panel.add_child(_shard_label)
 
@@ -90,15 +90,15 @@ func _build_ui() -> void:
 
 	_continue_button = Button.new()
 	_continue_button.text = "Continue"
-	_continue_button.add_theme_font_size_override("font_size", 22)
-	_continue_button.custom_minimum_size = Vector2(200, 50)
+	_continue_button.add_theme_font_size_override("font_size", 16)
+	_continue_button.custom_minimum_size = Vector2(150, 38)
 	_continue_button.pressed.connect(_on_continue_pressed)
 	panel.add_child(_continue_button)
 
 	_play_again_button = Button.new()
 	_play_again_button.text = "Play Again"
-	_play_again_button.add_theme_font_size_override("font_size", 18)
-	_play_again_button.custom_minimum_size = Vector2(200, 40)
+	_play_again_button.add_theme_font_size_override("font_size", 14)
+	_play_again_button.custom_minimum_size = Vector2(150, 30)
 	_play_again_button.pressed.connect(_on_play_again_pressed)
 	panel.add_child(_play_again_button)
 
@@ -149,7 +149,7 @@ func _make_stat_label(text: String) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.add_theme_font_size_override("font_size", 20)
+	l.add_theme_font_size_override("font_size", 16)
 	l.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.85))
 	return l
 

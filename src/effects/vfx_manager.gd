@@ -6,22 +6,22 @@ class_name VfxManager
 
 # Hit particles
 @export var melee_hit_count: int = 10
-@export var melee_hit_speed_min: float = 50.0
-@export var melee_hit_speed_max: float = 150.0
+@export var melee_hit_speed_min: float = 38.0
+@export var melee_hit_speed_max: float = 113.0
 @export var melee_hit_lifetime: float = 0.35
 
 @export var ranged_hit_count: int = 5
-@export var ranged_hit_speed_min: float = 80.0
-@export var ranged_hit_speed_max: float = 120.0
+@export var ranged_hit_speed_min: float = 60.0
+@export var ranged_hit_speed_max: float = 90.0
 @export var ranged_hit_lifetime: float = 0.2
 
 @export var death_burst_count: int = 10
-@export var death_burst_speed_min: float = 100.0
-@export var death_burst_speed_max: float = 250.0
-@export var death_burst_lifetime: float = 0.5
+@export var death_burst_speed_min: float = 75.0
+@export var death_burst_speed_max: float = 188.0
+@export var death_burst_lifetime: float = 0.4
 
 # Screen effects
-@export var shake_intensity: float = 4.0
+@export var shake_intensity: float = 3.0
 @export var shake_duration: float = 0.15
 @export var hit_flash_duration: float = 0.1
 @export var vignette_alpha: float = 0.3
@@ -67,12 +67,12 @@ func _on_damage_dealt(amount: float, hit_position: Vector2, attack_type: String)
 		"melee":
 			_emit_burst(hit_position, melee_hit_count, Color.WHITE,
 				melee_hit_speed_min, melee_hit_speed_max, melee_hit_lifetime, 8.0)
-			_screen_shake(2.0, 0.06)
+			_screen_shake(1.5, 0.06)
 		"ranged":
 			_emit_burst(hit_position, ranged_hit_count, Color.ORANGE,
 				ranged_hit_speed_min, ranged_hit_speed_max, ranged_hit_lifetime, 6.0)
 		"explosion":
-			_screen_shake(5.0, 0.15)
+			_screen_shake(4.0, 0.15)
 
 
 # --- Player damage ---
@@ -148,9 +148,9 @@ func _on_dodge_started() -> void:
 	var c := sprite.self_modulate
 	ghost.modulate = Color(c.r, c.g, minf(c.b + 0.2, 1.0), afterimage_alpha)
 	ghost.set_texture(sprite.texture)
-	ghost.set_draw_size(24.0)
+	ghost.set_draw_size(18.0)
 	_effects_2d.add_child(ghost)
-	ghost.play(afterimage_lifetime, Vector2.ZERO, 24.0)
+	ghost.play(afterimage_lifetime, Vector2.ZERO, 18.0)
 
 
 # --- Enemy death burst ---
@@ -159,7 +159,7 @@ func _on_enemy_killed(_kill_type: String, position: Vector2, enemy_color: Color,
 	if _is_dead:
 		return
 	var count := death_burst_count * 2 if is_elite else death_burst_count
-	var size := 8.0 if is_elite else 5.0
+	var size := 6.0 if is_elite else 4.0
 	_emit_burst(position, count, enemy_color,
 		death_burst_speed_min, death_burst_speed_max, death_burst_lifetime, size)
 
@@ -198,11 +198,11 @@ func _on_wave_started(wave_number: int) -> void:
 # --- Boss events ---
 
 func _on_boss_spawned(_boss_name: String, _max_hp: int) -> void:
-	_screen_shake(8.0, 0.3)
+	_screen_shake(6.0, 0.3)
 
 
 func _on_boss_killed(_boss_name: String) -> void:
-	_screen_shake(12.0, 0.5)
+	_screen_shake(9.0, 0.5)
 	if _player:
 		_emit_burst(_player.global_position, 30, Color(1.0, 0.84, 0.0), 80.0, 300.0, 0.7, 10.0)
 
@@ -260,7 +260,7 @@ func _on_vfx_requested(effect_name: String, position: Vector2) -> void:
 	match effect_name:
 		"explosion":
 			_emit_burst(position, 20, Color(1.0, 0.5, 0.0), 100.0, 250.0, 0.5, 10.0)
-			_screen_shake(5.0, 0.15)
+			_screen_shake(4.0, 0.15)
 
 
 func _find_camera() -> Camera2D:

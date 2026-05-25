@@ -5,22 +5,22 @@ extends Node
 
 # --- Player Defaults ---
 const PLAYER_MAX_HP: int = 100
-const PLAYER_BASE_SPEED: float = 300.0
+const PLAYER_BASE_SPEED: float = 225.0
 const PLAYER_HIT_INVINCIBILITY: float = 0.2
 const PLAYER_DEATH_LINGER: float = 3.0
 
 # --- Combat Defaults ---
 const MELEE_ATTACK_DURATION: float = 0.2
-const MELEE_KNOCKBACK_SPEED: float = 400.0
-const MELEE_KNOCKBACK_DISTANCE: float = 40.0
+const MELEE_KNOCKBACK_SPEED: float = 300.0
+const MELEE_KNOCKBACK_DISTANCE: float = 30.0
 const DUAL_MELEE_ATTACK_INTERVAL: float = 0.1
 const DUAL_MELEE_OVERLAP_BONUS: float = 1.2
 const DUAL_RANGED_COOLDOWN_MULT: float = 1.5
 const DUAL_RANGED_DAMAGE_MULT: float = 0.9
 
 # --- Dodge Defaults ---
-const DODGE_DISTANCE: float = 120.0
-const DODGE_SPEED: float = 600.0
+const DODGE_DISTANCE: float = 90.0
+const DODGE_SPEED: float = 450.0
 const DODGE_INVINCIBILITY: float = 0.2
 const DODGE_COOLDOWN: float = 2.0
 
@@ -32,8 +32,8 @@ const CONTACT_DAMAGE_COOLDOWN: float = 0.5
 const SPRITE_SCALE: float = 1.0
 
 # --- Arena ---
-const ARENA_WIDTH: float = 1000.0
-const ARENA_HEIGHT: float = 600.0
+const ARENA_WIDTH: float = 750.0
+const ARENA_HEIGHT: float = 450.0
 
 # --- Collision Layers ---
 const LAYER_PLAYER: int = 1
