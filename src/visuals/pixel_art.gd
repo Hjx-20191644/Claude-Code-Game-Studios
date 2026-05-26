@@ -77,6 +77,89 @@ const MATERIAL_ENERGY: Dictionary = {
 static var _cache: Dictionary = {}
 
 
+
+static var LEVEL_COLORS: Array[Color] = [
+		Color(0.02, 0.02, 0.02),
+		Color(0.05, 0.05, 0.05),
+		Color(0.15, 0.15, 0.15),
+		Color(0.30, 0.30, 0.30),
+		Color(0.55, 0.55, 0.55),
+		Color(0.72, 0.72, 0.72),
+		Color(0.88, 0.88, 0.88),
+		Color(0.96, 0.96, 0.96),
+		Color(1.00, 1.00, 1.00),
+	]
+
+static var PALETTE_MELEE: Array[Color] = [
+		Color(0.0235, 0.0078, 0.0353),  # L0
+		Color(0.0745, 0.0392, 0.1098),  # L1
+		Color(0.1961, 0.1529, 0.2078),  # L2
+		Color(0.4078, 0.3137, 0.4941),  # L3
+		Color(0.6235, 0.4706, 0.7451),  # L4
+		Color(0.6588, 0.6471, 0.6431),  # L5
+		Color(0.8549, 0.8392, 0.8275),  # L6
+		Color(0.9569, 0.9569, 0.9569),  # L7
+		Color(1.0000, 1.0000, 1.0000),  # L8
+	]
+
+static var PALETTE_CHARGER: Array[Color] = [
+		Color(0.0275, 0.0078, 0.0549),  # L0
+		Color(0.0745, 0.0392, 0.1216),  # L1
+		Color(0.1961, 0.1608, 0.2000),  # L2
+		Color(0.3647, 0.3294, 0.4863),  # L3
+		Color(0.6471, 0.4353, 0.7686),  # L4
+		Color(0.7804, 0.7451, 0.7843),  # L5
+		Color(0.8784, 0.8784, 0.8784),  # L6
+		Color(0.9569, 0.9569, 0.9569),  # L7
+		Color(1.0000, 1.0000, 1.0000),  # L8
+	]
+
+static var PALETTE_TANK: Array[Color] = [
+		Color(0.0157, 0.0118, 0.0157),  # L0
+		Color(0.0627, 0.0588, 0.0706),  # L1
+		Color(0.1922, 0.1804, 0.1608),  # L2
+		Color(0.3725, 0.3451, 0.4941),  # L3
+		Color(0.5294, 0.5216, 0.5529),  # L4
+		Color(0.6902, 0.6902, 0.7137),  # L5
+		Color(0.8353, 0.8392, 0.8196),  # L6
+		Color(0.9412, 0.9451, 0.9333),  # L7
+		Color(1.0000, 1.0000, 1.0000),  # L8
+	]
+
+static var PALETTE_RANGED: Array[Color] = [
+		Color(0.0157, 0.0118, 0.0157),  # L0
+		Color(0.0667, 0.0627, 0.0667),  # L1
+		Color(0.1804, 0.1686, 0.1608),  # L2
+		Color(0.3608, 0.3412, 0.3882),  # L3
+		Color(0.5922, 0.5882, 0.5922),  # L4
+		Color(0.6471, 0.6510, 0.6471),  # L5
+		Color(0.8431, 0.8471, 0.8431),  # L6
+		Color(0.9569, 0.9569, 0.9569),  # L7
+		Color(1.0000, 1.0000, 1.0000),  # L8
+	]
+
+static func draw_from_encoded(image: Image, data: String) -> void:
+	draw_from_palette(image, data, LEVEL_COLORS)
+
+static func draw_from_palette(image: Image, data: String, palette: Array[Color]) -> void:
+		var rows := data.split("|", false)
+		var h := mini(image.get_height(), rows.size())
+		var w := image.get_width()
+		for y in h:
+			var parts := rows[y].split(",", false)
+			var x := 0
+			for part in parts:
+				var is_transparent := part[0] == "T"
+				var body := part.substr(1) if is_transparent else part
+				var colon := body.find(":")
+				var count := int(body.substr(colon + 1))
+				if not is_transparent:
+					var level := int(body.substr(0, colon))
+					var color := palette[level]
+					var end := mini(w, x + count)
+					for px in range(x, end):
+						image.set_pixel(px, y, color)
+				x += count
 static func generate_sprite(width: int, height: int, draw_func: Callable, extra_args: Array = []) -> ImageTexture:
 	var key := "%s_%dx%d" % [draw_func.get_method(), width, height]
 	if extra_args.size() > 0:

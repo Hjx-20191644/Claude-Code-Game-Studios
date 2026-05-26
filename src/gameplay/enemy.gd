@@ -93,15 +93,19 @@ func _ready() -> void:
 		if _is_boss:
 			sprite.texture = PA.generate_sprite(144, 144, ST.enemy_boss_sprite, [PA.MATERIAL_FLESH])
 		elif _is_tank:
-			sprite.texture = PA.generate_sprite(96, 96, ST.enemy_tank_sprite, [PA.MATERIAL_METAL])
+			sprite.texture = PA.generate_sprite(96, 96, ST.enemy_ref_tank_sprite, [PA.MATERIAL_METAL])
+			sprite.self_modulate = Color.WHITE
 		elif _is_exploder:
 			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_exploder_sprite, [PA.MATERIAL_FLESH])
 		elif _is_charger:
-			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_charger_sprite, [PA.MATERIAL_FLESH])
+			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_ref_charger_sprite, [PA.MATERIAL_FLESH])
+			sprite.self_modulate = Color.WHITE
 		elif _is_ranged:
-			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_ranged_sprite, [PA.MATERIAL_FLESH])
+			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_ref_ranged_sprite, [PA.MATERIAL_FLESH])
+			sprite.self_modulate = Color.WHITE
 		else:
-			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_melee_sprite, [PA.MATERIAL_FLESH])
+			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_ref_melee_sprite, [PA.MATERIAL_FLESH])
+			sprite.self_modulate = Color.WHITE
 
 		if enemy_data.is_elite:
 			_base_scale = enemy_data.elite_scale
@@ -144,7 +148,7 @@ func _ready() -> void:
 		_anim_interval = 0.67
 	elif _is_tank:
 		_anim_frames = PA.generate_animated_frames(
-			[ST.enemy_tank_sprite, ST.enemy_tank_sprite_blink],
+			[ST.enemy_ref_tank_sprite, ST.enemy_ref_tank_sprite],
 			96, 96, [PA.MATERIAL_METAL]
 		)
 		_anim_interval = 0.75
@@ -156,19 +160,19 @@ func _ready() -> void:
 		_anim_interval = 0.75
 	elif _is_charger:
 		_anim_frames = PA.generate_animated_frames(
-			[ST.enemy_charger_sprite, ST.enemy_charger_sprite_blink],
+			[ST.enemy_ref_charger_sprite, ST.enemy_ref_charger_sprite],
 			48, 48, [PA.MATERIAL_FLESH]
 		)
 		_anim_interval = 0.75
 	elif _is_ranged:
 		_anim_frames = PA.generate_animated_frames(
-			[ST.enemy_ranged_sprite, ST.enemy_ranged_sprite_blink],
+			[ST.enemy_ref_ranged_sprite, ST.enemy_ref_ranged_sprite],
 			48, 48, [PA.MATERIAL_FLESH]
 		)
 		_anim_interval = 0.75
 	else:
 		_anim_frames = PA.generate_animated_frames(
-			[ST.enemy_melee_sprite, ST.enemy_melee_sprite_blink],
+			[ST.enemy_ref_melee_sprite, ST.enemy_ref_melee_sprite],
 			48, 48, [PA.MATERIAL_FLESH]
 		)
 		_anim_interval = 0.75

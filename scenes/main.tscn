@@ -46,7 +46,7 @@ offset_left = 105.0
 offset_top = 45.0
 offset_right = 855.0
 offset_bottom = 495.0
-color = Color(0.22, 0.20, 0.18, 1)
+color = Color(0.12, 0.14, 0.20, 1)
 
 [node name="Walls" type="Node2D" parent="Arena"]
 

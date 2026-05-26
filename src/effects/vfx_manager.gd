@@ -80,9 +80,7 @@ func _on_damage_dealt(amount: float, hit_position: Vector2, attack_type: String)
 func _on_damage_taken(_amount: float, _position: Vector2) -> void:
 	if _is_dead:
 		return
-	_player_flash()
 	_screen_shake(shake_intensity, shake_duration)
-	_show_vignette()
 
 
 func _player_flash() -> void:
@@ -233,6 +231,7 @@ func _create_overlays() -> void:
 	_vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_vignette.color = Color(1.0, 0.0, 0.0, 0.0)
 	_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_vignette.hide()
 	hud.add_child(_vignette)
 
 	# Death overlay — gray on death
