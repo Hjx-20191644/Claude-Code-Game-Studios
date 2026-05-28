@@ -9,6 +9,7 @@ signal player_died
 # --- Wave ---
 signal wave_started(wave_number: int)
 signal wave_completed(wave_number: int)
+signal wave_timer_updated(seconds: float)
 signal wave_enemy_count_changed(remaining: int)
 signal wave_spawn_complete(count: int, enemy_type: String)
 signal upgrade_window_requested

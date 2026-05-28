@@ -1,28 +1,33 @@
 extends Node
 class_name WaveManager
 
-## Wave state machine: orchestrates the "fight → clear → upgrade" rhythm.
-## Communicates entirely through EventBus signals.
+## Survival wave system: 60s per wave, continuous enemy spawning.
+## Survive until the timer expires to clear the wave.
 
 enum State { IDLE, WAVE_ACTIVE, WAVE_CLEARED, UPGRADE_WINDOW }
 
 @export var wave_data_path: String = "res://assets/data/wave_config.tres"
+@export var wave_duration: float = 60.0
+@export var spawn_window: float = 52.0
+@export var enemy_multiplier: float = 3.0
 
 var _state: State = State.IDLE
 var _current_wave: int = 0
-
-# Per-wave tracking
-var _enemies_spawned: int = 0
-var _enemies_killed: int = 0
-var _all_spawned: bool = false
-var _pending_spawn_batches: int = 0
+var _wave_timer: float = 0.0
 var _wave_start_ticks: int = 0
 
-# Upgrade timeout
+var _spawn_pool: Array = []
+var _spawn_interval: float = 0.0
+var _spawn_timer: float = 0.0
+var _total_enemies_this_wave: int = 0
+var _boss_killed_this_wave: bool = false
+
 var _upgrade_timeout_timer: float = 0.0
 
 var _wave_data: WaveData
 var _spawn_manager: Node
+
+const SPAWN_TYPES := ["melee", "ranged", "charger", "exploder", "tank", "boss", "egg", "spawner", "buffer", "reward"]
 
 
 func _ready() -> void:
@@ -36,37 +41,36 @@ func _ready() -> void:
 		push_warning("WaveManager: no spawn node found, spawn calls will be skipped")
 
 	EventBus.enemy_killed.connect(_on_enemy_killed)
-	EventBus.wave_spawn_complete.connect(_on_wave_spawn_complete)
 	EventBus.player_died.connect(_on_player_died)
 	EventBus.boss_killed.connect(_on_boss_killed)
 
 
-func _physics_process(delta: float) -> void:
-	if _state == State.UPGRADE_WINDOW:
+func _process(delta: float) -> void:
+	if _state == State.WAVE_ACTIVE:
+		_wave_timer -= delta
+		EventBus.wave_timer_updated.emit(_wave_timer)
+		_process_spawning(delta)
+		if _wave_timer <= 0.0:
+			_wave_timer = 0.0
+			_on_wave_cleared()
+	elif _state == State.UPGRADE_WINDOW:
 		_upgrade_timeout_timer -= delta
 		if _upgrade_timeout_timer <= 0.0:
 			_schedule_next_wave()
-	elif _state == State.WAVE_ACTIVE and _all_spawned:
-		# Safety net: re-check completion every frame after all enemies spawned.
-		# Catches edge cases where signal ordering prevents _check_wave_complete
-		# from seeing the final kill.
-		_check_wave_complete()
 
 
-## Start a new run: reset everything, begin wave 1.
 func start_run() -> void:
 	_current_wave = 0
 	_state = State.IDLE
+	_boss_killed_this_wave = false
 	_advance_to_next_wave()
 
 
-## Called by in-run upgrade UI when player confirms their choice.
 func upgrade_completed() -> void:
 	if _state == State.UPGRADE_WINDOW:
 		_schedule_next_wave()
 
 
-## Returns current wave number (1-based, 0 before start_run).
 func get_current_wave() -> int:
 	return _current_wave
 
@@ -76,35 +80,23 @@ func get_current_wave() -> int:
 func _advance_to_next_wave() -> void:
 	_state = State.IDLE
 	_current_wave += 1
-	_reset_wave_tracking()
+	_wave_timer = wave_duration
+	_spawn_timer = 0.0
+	_boss_killed_this_wave = false
+	_wave_start_ticks = Time.get_ticks_msec()
 
 	var config := _get_wave_config(_current_wave)
-
-	# Count how many spawn batches we expect
-	_pending_spawn_batches = 0
-	for type in ["melee", "ranged", "charger", "exploder", "tank", "boss", "egg", "spawner", "buffer", "reward"]:
-		var count: int = config.get(type + "_count") as int
-		if count > 0:
-			_pending_spawn_batches += 1
+	_build_spawn_pool(config)
 
 	_state = State.WAVE_ACTIVE
-	_wave_start_ticks = Time.get_ticks_msec()
 	_heal_player_to_full()
 	EventBus.wave_started.emit(_current_wave)
+	EventBus.wave_timer_updated.emit(_wave_timer)
 
-	if _spawn_manager:
-		for type in ["melee", "ranged", "charger", "exploder", "tank", "boss", "egg", "spawner", "buffer", "reward"]:
-			var count: int = config.get(type + "_count") as int
-			if count > 0:
-				_spawn_manager.spawn_enemies(type, count, _current_wave)
-	else:
-		_all_spawned = true
-		_check_wave_complete()
-
-	# If no enemies this wave, auto-complete
-	if _pending_spawn_batches == 0:
-		_all_spawned = true
-		_on_wave_cleared()
+	if config.boss_count > 0:
+		await get_tree().create_timer(1.0).timeout
+		if _spawn_manager:
+			_spawn_manager.spawn_enemies("boss", config.boss_count, _current_wave)
 
 
 func _on_wave_cleared() -> void:
@@ -128,23 +120,53 @@ func _schedule_next_wave() -> void:
 		_advance_to_next_wave()
 
 
+# --- Continuous spawning ---
+
+func _build_spawn_pool(config: WaveConfig) -> void:
+	_spawn_pool.clear()
+	_total_enemies_this_wave = 0
+	var mult := int(enemy_multiplier)
+
+	for type in SPAWN_TYPES:
+		var count: int = config.get(type + "_count") as int
+		if count <= 0:
+			continue
+		count *= mult
+		var data_id: String = _get_data_id(type)
+		for _i in count:
+			_spawn_pool.append({"type": type, "data_id": data_id})
+		_total_enemies_this_wave += count
+
+	if _total_enemies_this_wave > 0:
+		_spawn_interval = spawn_window / float(_total_enemies_this_wave)
+	else:
+		_spawn_interval = INF
+
+	_spawn_pool.shuffle()
+
+
+func _process_spawning(delta: float) -> void:
+	if _total_enemies_this_wave <= 0:
+		return
+	if _wave_timer <= (wave_duration - spawn_window):
+		return
+	if not _spawn_manager:
+		return
+
+	_spawn_timer += delta
+	while _spawn_timer >= _spawn_interval and _spawn_pool.size() > 0:
+		_spawn_timer -= _spawn_interval
+		var entry: Dictionary = _spawn_pool.pop_back()
+		var pos := _get_random_spawn_pos()
+		var data := GameConfig.get_enemy_data(entry["data_id"])
+		if data:
+			_spawn_manager._spawn_one(pos, data, _current_wave, false, true)
+
+
 # --- Signal handlers ---
 
-func _on_wave_spawn_complete(count: int, _enemy_type: String) -> void:
-	if _state != State.WAVE_ACTIVE:
-		return
-	_enemies_spawned += count
-	_pending_spawn_batches -= 1
-	if _pending_spawn_batches <= 0:
-		_all_spawned = true
-		_check_wave_complete()
-
-
 func _on_enemy_killed(_kill_type: String, _position: Vector2, _color: Color, _is_elite: bool = false) -> void:
-	if _state != State.WAVE_ACTIVE:
-		return
-	_enemies_killed += 1
-	_check_wave_complete()
+	pass  # Timer-based waves: kills don't complete the wave
 
 
 func _on_player_died() -> void:
@@ -155,42 +177,12 @@ func _on_player_died() -> void:
 func _on_boss_killed(_boss_name: String) -> void:
 	if _state != State.WAVE_ACTIVE:
 		return
-	# Boss death completes the wave immediately (ignore remaining adds)
-	_on_wave_cleared()
+	_boss_killed_this_wave = true
+	if _wave_timer > 5.0:
+		_wave_timer = 5.0
 
 
 # --- Helpers ---
-
-const MIN_WAVE_DURATION_MSEC: int = 50
-
-func _check_wave_complete() -> void:
-	if not _all_spawned:
-		return
-	if _enemies_killed < _enemies_spawned:
-		# Fallback: if signal-based counting is off, trust the scene count
-		if _count_living_enemies() == 0:
-			_enemies_killed = _enemies_spawned  # reconcile
-		else:
-			return
-	if Time.get_ticks_msec() - _wave_start_ticks < MIN_WAVE_DURATION_MSEC:
-		return
-	_on_wave_cleared()
-
-
-func _count_living_enemies() -> int:
-	var count := 0
-	for e in get_tree().get_nodes_in_group("enemies"):
-		if not is_instance_valid(e):
-			continue
-		if e.is_queued_for_deletion():
-			continue
-		if e.has_node("HealthComponent"):
-			var hc = e.get_node("HealthComponent")
-			if hc.has_method("is_alive") and not hc.is_alive():
-				continue
-		count += 1
-	return count
-
 
 func _should_show_upgrade() -> bool:
 	return _get_wave_config(_current_wave).has_upgrade_window
@@ -220,6 +212,24 @@ func _get_wave_config(wave: int) -> WaveConfig:
 	return config
 
 
+func _get_data_id(enemy_type: String) -> String:
+	var map := {
+		"melee": "melee_enemy", "ranged": "ranged_enemy",
+		"charger": "charger", "exploder": "exploder",
+		"tank": "tank", "boss": "warlord",
+		"spawner": "spawner", "egg": "egg",
+		"buffer": "buffer", "reward": "reward",
+	}
+	return map.get(enemy_type, "melee_enemy")
+
+
+func _get_random_spawn_pos() -> Vector2:
+	if not _spawn_manager:
+		return Vector2.ZERO
+	var base_angle := randf() * TAU
+	return _spawn_manager._compute_spawn_position(base_angle, 0)
+
+
 func _fixup_wave_data() -> void:
 	for i in _wave_data.waves.size():
 		if not _wave_data.waves[i] is WaveConfig:
@@ -234,13 +244,6 @@ func _heal_player_to_full() -> void:
 		var hc := player.get_node("HealthComponent")
 		if hc.has_method("heal_full"):
 			hc.heal_full()
-
-
-func _reset_wave_tracking() -> void:
-	_enemies_spawned = 0
-	_enemies_killed = 0
-	_all_spawned = false
-	_pending_spawn_batches = 0
 
 
 func _delay(seconds: float) -> void:

@@ -19,6 +19,7 @@ var _health_bar_bg: ColorRect
 var _dodge_dot: ColorRect
 var _score_label: Label
 var _wave_label: Label
+var _wave_timer_label: Label
 var _kills_label: Label
 var _shard_label: Label
 var _wave_announce: Label
@@ -51,6 +52,7 @@ func _ready() -> void:
 	EventBus.wave_started.connect(_on_wave_started)
 	EventBus.player_died.connect(_on_player_died)
 	EventBus.wave_completed.connect(_on_wave_completed)
+	EventBus.wave_timer_updated.connect(_on_wave_timer_updated)
 	EventBus.shard_collected.connect(_on_shard_collected)
 
 
@@ -146,6 +148,15 @@ func _build_score_labels() -> void:
 	_wave_label.position = Vector2(hud_margin, hud_margin + 22)
 	add_child(_wave_label)
 
+	# Timer
+	_wave_timer_label = Label.new()
+	_wave_timer_label.text = "60"
+	_wave_timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	_wave_timer_label.add_theme_font_size_override("font_size", 20)
+	_wave_timer_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0))
+	_wave_timer_label.position = Vector2(hud_margin, hud_margin + 38)
+	add_child(_wave_timer_label)
+
 	# Kills
 	_kills_label = Label.new()
 	_kills_label.text = "%s: 0" % Locale.t("kills")
@@ -163,6 +174,15 @@ func _build_score_labels() -> void:
 	_shard_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 0.8))
 	_shard_label.position = Vector2(hud_margin, hud_margin + 54)
 	add_child(_shard_label)
+
+
+func _on_wave_timer_updated(seconds: float) -> void:
+	if _wave_timer_label:
+		_wave_timer_label.text = "%.0f" % seconds
+		if seconds <= 10.0:
+			_wave_timer_label.add_theme_color_override("font_color", Color(1.0, 0.2, 0.1))
+		else:
+			_wave_timer_label.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0))
 
 
 func _on_score_changed(new_score: int) -> void:

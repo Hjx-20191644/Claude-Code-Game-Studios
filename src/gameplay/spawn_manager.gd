@@ -9,8 +9,12 @@ class_name SpawnManager
 @export var spawn_angle_spread: float = 30.0
 @export var max_spawn_retries: int = 3
 
+const PA = preload("res://src/visuals/pixel_art.gd")
+const ST = preload("res://src/visuals/sprite_templates.gd")
+
 var _enemy_scene: PackedScene = preload("res://scenes/enemy.tscn")
 var _elite_spawned_this_wave: bool = false
+var _spawn_indicator_enabled: bool = true
 
 # Type → data file ID mapping
 var _type_data_map := {
@@ -20,6 +24,10 @@ var _type_data_map := {
 	"exploder": "exploder",
 	"tank": "tank",
 	"boss": "warlord",
+	"spawner": "spawner",
+	"egg": "egg",
+	"buffer": "buffer",
+	"reward": "reward",
 }
 
 @onready var _player: Player = _find_player()
@@ -50,18 +58,19 @@ func spawn_enemies(enemy_type: String, count: int, wave_number: int = 1, spawn_d
 	if enemy_type == "boss":
 		var center := _get_arena_rect().get_center()
 		await get_tree().create_timer(0.8).timeout  # intro anticipation
-		_spawn_one(center, data, wave_number, false)
+		await _spawn_one(center, data, wave_number, false, enemy_type == "boss")
 		# boss_spawned is emitted by enemy._ready() with scaled HP
 		EventBus.wave_spawn_complete.emit(count, enemy_type)
 		return
 
 	var elite_wave := wave_number > 0 and wave_number % 5 == 0
 	var base_angle := randf() * TAU
+	var is_boss_spawn := false
 
 	for i in count:
 		var pos := _compute_spawn_position(base_angle, i)
 		var is_elite := elite_wave and not _elite_spawned_this_wave
-		_spawn_one(pos, data, wave_number, is_elite)
+		await _spawn_one(pos, data, wave_number, is_elite, is_boss_spawn)
 		if is_elite:
 			_elite_spawned_this_wave = true
 		if spawn_delay > 0.0 and i < count - 1:
@@ -88,25 +97,61 @@ func _compute_spawn_position(base_angle: float, _index: int) -> Vector2:
 	return pos
 
 
-func _spawn_one(pos: Vector2, data: EnemyData, wave_number: int, is_elite: bool = false) -> void:
-	var enemy := _enemy_scene.instantiate() as Enemy
+const SPAWN_BLOCK_RADIUS: float = 38.0
 
-	# Create a per-instance copy of data so we can mutate it for wave scaling
-	var scaled := data.duplicate() as EnemyData
+func _spawn_one(pos: Vector2, data: EnemyData, wave_number: int, is_elite: bool = false, _skip_indicator: bool = false) -> void:
 	var waves_elapsed := maxi(0, wave_number - 1)
 
-	# Boss: reduced scaling (3% HP/wave, +2 dmg/wave)
+	# Spawn indicator: flash red marker, player can block by standing on it
+	var blocked: bool = false
+	if _spawn_indicator_enabled and not _skip_indicator:
+		var indicator: Node2D = _show_spawn_indicator(pos)
+		var elapsed: float = 0.0
+		while elapsed < 0.55:
+			var dt := get_process_delta_time()
+			elapsed += dt
+			await get_tree().process_frame
+			if _player and is_instance_valid(_player):
+				if _player.global_position.distance_to(pos) < SPAWN_BLOCK_RADIUS:
+					blocked = true
+					break
+		if is_instance_valid(indicator):
+			indicator.queue_free()
+
+	if blocked:
+		return
+
+	var enemy := _enemy_scene.instantiate() as Enemy
+
+	# Dual-segment numeric design: base + wave * growth (not percentage)
+	var scaled := data.duplicate() as EnemyData
+
 	if data.enemy_type == "boss":
-		scaled.max_hp = int(data.max_hp * (1.0 + 0.03 * waves_elapsed))
+		scaled.max_hp = data.max_hp + waves_elapsed * 15
 		scaled.contact_damage = data.contact_damage + waves_elapsed * 2
 	elif data.enemy_type == "melee":
-		scaled.max_hp = int(data.max_hp * (1.0 + 0.1 * waves_elapsed))
+		scaled.max_hp = data.max_hp + waves_elapsed * 1
+		scaled.contact_damage = data.contact_damage + waves_elapsed / 2
+	elif data.enemy_type == "charger" or data.enemy_type == "tank":
+		var growth: int = 12 if data.enemy_type == "tank" else 5
+		scaled.max_hp = data.max_hp + waves_elapsed * growth
+		scaled.contact_damage = data.contact_damage + waves_elapsed * 2
+	elif data.enemy_type == "ranged" or data.enemy_type == "exploder":
+		scaled.max_hp = data.max_hp + waves_elapsed * 2
 		scaled.contact_damage = data.contact_damage + waves_elapsed
+	elif data.enemy_type == "spawner":
+		scaled.max_hp = data.max_hp + waves_elapsed * 3
+		scaled.contact_damage = data.contact_damage + waves_elapsed
+	elif data.enemy_type == "egg":
+		scaled.max_hp = data.max_hp + waves_elapsed * 2
+	elif data.enemy_type == "buffer":
+		scaled.max_hp = data.max_hp + waves_elapsed * 2
+	elif data.enemy_type == "reward":
+		scaled.max_hp = data.max_hp + waves_elapsed * 2
 	else:
-		scaled.max_hp = int(data.max_hp * (1.0 + 0.05 * waves_elapsed))
+		scaled.max_hp = data.max_hp + waves_elapsed * 3
 		scaled.contact_damage = data.contact_damage + waves_elapsed
 
-	# Elite: bonus damage multiplier on top of wave scaling
 	if is_elite:
 		scaled.is_elite = true
 		scaled.contact_damage = int(scaled.contact_damage * scaled.elite_damage_mult)
@@ -115,6 +160,20 @@ func _spawn_one(pos: Vector2, data: EnemyData, wave_number: int, is_elite: bool 
 	enemy.enemy_data = scaled
 	enemy.global_position = pos
 	_enemies_container.add_child(enemy)
+
+
+func _show_spawn_indicator(pos: Vector2) -> Node2D:
+	var marker := Sprite2D.new()
+	marker.texture = PA.generate_sprite(24, 24, ST.enemy_ref_melee_sprite, [PA.MATERIAL_FLESH])
+	marker.self_modulate = Color(1.0, 0.12, 0.08)
+	marker.scale = Vector2(1.3, 1.3)
+	marker.global_position = pos
+	_enemies_container.add_child(marker)
+	var tw := create_tween()
+	tw.set_loops()
+	tw.tween_property(marker, "modulate:a", 0.1, 0.1)
+	tw.tween_property(marker, "modulate:a", 1.0, 0.1)
+	return marker
 
 
 func _clamp_to_arena(pos: Vector2) -> Vector2:

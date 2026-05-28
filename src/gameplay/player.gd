@@ -38,9 +38,11 @@ func _ready() -> void:
 
 	sprite.texture = PA.generate_sprite(48, 48, ST.player_sprite, [PA.MATERIAL_FLESH])
 	sprite.self_modulate = Color(0.3, 0.7, 1.0)
+	sprite.scale = Vector2(GameConfig.ENTITY_SCALE, GameConfig.ENTITY_SCALE)
 
 	weapon_sprite.texture = PA.generate_sprite(24, 16, ST.gun_sprite, [PA.MATERIAL_METAL])
 	weapon_sprite.self_modulate = Color(0.8, 0.6, 0.3)
+	weapon_sprite.scale = Vector2(GameConfig.ENTITY_SCALE, GameConfig.ENTITY_SCALE)
 
 	# Limbs
 	var limb_tex := PA.generate_sprite(4, 16, ST.arm_stick_sprite, [PA.MATERIAL_FLESH])

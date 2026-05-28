@@ -4,7 +4,8 @@ const PA = preload("res://src/visuals/pixel_art.gd")
 const ST = preload("res://src/visuals/sprite_templates.gd")
 
 ## Enemy with multi-type AI: melee (flank-and-charge), ranged (keep-distance + shoot),
-## charger (periodic dash + stun), exploder (rush + AoE blast), tank (slow + front shield).
+## charger (periodic dash + stun), exploder (rush + AoE blast), tank (slow + front shield),
+## spawner (slow chase + spawns minions on death), egg (stationary + hatches elite charger).
 ## Type determined by enemy_data.enemy_type.
 
 enum MeleeState { SPAWN, FLANKING, CHARGING }
@@ -13,6 +14,10 @@ enum ChargerState { SPAWN, TRACKING, CHARGE_PREP, CHARGING, STUN }
 enum ExploderState { SPAWN, RUSHING, WARNING, EXPLODING }
 enum BossState { SPAWN, TRACKING, CHARGE_WINDUP, CHARGING, STUN, SLAM_WINDUP, SLAM }
 enum BossPhase { PHASE_1, PHASE_2 }
+enum SpawningState { SPAWN, TRACKING }
+enum EggState { SPAWN, INCUBATING }
+enum BufferState { SPAWN, ACTIVE }
+enum RewardState { SPAWN, FLEEING }
 
 @export var enemy_data: EnemyData
 
@@ -31,6 +36,10 @@ var _is_ranged: bool = false
 var _is_charger: bool = false
 var _is_exploder: bool = false
 var _is_tank: bool = false
+var _is_spawner: bool = false
+var _is_egg: bool = false
+var _is_buffer: bool = false
+var _is_reward: bool = false
 
 # Melee FSM
 var _m_state: MeleeState = MeleeState.SPAWN
@@ -65,14 +74,27 @@ var _boss_cooldown: float = 0.0
 var _boss_timer: float = 0.0
 var _boss_charge_dir: Vector2 = Vector2.ZERO
 var _boss_has_slammed: bool = false
+# Spawner
+var _s_state: SpawningState = SpawningState.SPAWN
+# Egg
+var _eg_state: EggState = EggState.SPAWN
+var _egg_timer: float = 5.0
+# Buffer
+var _b_state: BufferState = BufferState.SPAWN
+@export var _aura_radius: float = 180.0
+# Reward
+var _rw_state: RewardState = RewardState.SPAWN
 
 # Knockback (overrides FSM)
+var _buff_damage_mult: float = 1.0
+var _buff_speed_mult: float = 1.0
 var _is_knocked_back: bool = false
 var _knockback_velocity: Vector2 = Vector2.ZERO
 var _knockback_timer: float = 0.0
 var _knockback_duration: float = 0.0
 
 var _bullet_scene: PackedScene
+var _enemy_scene: PackedScene
 
 
 func _ready() -> void:
@@ -89,6 +111,10 @@ func _ready() -> void:
 		_is_exploder = enemy_data.enemy_type == "exploder"
 		_is_tank = enemy_data.enemy_type == "tank"
 		_is_boss = enemy_data.enemy_type == "boss"
+		_is_spawner = enemy_data.enemy_type == "spawner"
+		_is_egg = enemy_data.enemy_type == "egg"
+		_is_buffer = enemy_data.enemy_type == "buffer"
+		_is_reward = enemy_data.enemy_type == "reward"
 
 		# Generate pixel art sprite based on type
 		if _is_boss:
@@ -133,11 +159,34 @@ func _ready() -> void:
 			sprite.self_modulate = Color(0.3, 0.7, 1.0)
 			_base_scale = 1.0
 
+		# Spawner & egg visuals
+		if _is_spawner:
+			sprite.texture = PA.generate_sprite(48, 48, ST.enemy_ref_melee_sprite, [PA.MATERIAL_FLESH])
+			sprite.self_modulate = Color(0.7, 0.3, 0.9)
+			_base_scale = 1.2
+		if _is_egg:
+			sprite.texture = PA.generate_sprite(40, 40, ST.enemy_exploder_sprite, [PA.MATERIAL_FLESH])
+			sprite.self_modulate = Color(0.3, 1.0, 0.5)
+			_base_scale = 1.0
+
+		if _is_buffer:
+			sprite.texture = PA.generate_sprite(56, 56, ST.enemy_ref_tank_sprite, [PA.MATERIAL_METAL])
+			sprite.self_modulate = Color(0.2, 0.85, 0.3)
+			_base_scale = 1.3
+		if _is_reward:
+			sprite.texture = PA.generate_sprite(36, 36, ST.enemy_ref_melee_sprite, [PA.MATERIAL_FLESH])
+			sprite.self_modulate = Color(1.0, 0.85, 0.15)
+			_base_scale = 0.9
+
+	_base_scale *= GameConfig.ENTITY_SCALE
 	_set_sprite_scale(1.0, 1.0)
 
 	health.died.connect(_on_death)
+	if _is_buffer:
+		add_to_group("buffers")
 	_find_player()
 	_bullet_scene = load("res://scenes/bullet.tscn") as PackedScene
+	_enemy_scene = load("res://scenes/enemy.tscn") as PackedScene
 	_spawn_timer = 0.3
 
 	# Build idle animation frame array
@@ -171,6 +220,30 @@ func _ready() -> void:
 			48, 48, [PA.MATERIAL_FLESH]
 		)
 		_anim_interval = 0.75
+	elif _is_spawner:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_ref_melee_sprite, ST.enemy_ref_melee_sprite],
+			48, 48, [PA.MATERIAL_FLESH]
+		)
+		_anim_interval = 0.75
+	elif _is_egg:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_exploder_sprite, ST.enemy_exploder_sprite_blink],
+			40, 40, [PA.MATERIAL_FLESH]
+		)
+		_anim_interval = 0.75
+	elif _is_buffer:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_ref_tank_sprite, ST.enemy_ref_tank_sprite],
+			56, 56, [PA.MATERIAL_METAL]
+		)
+		_anim_interval = 1.0
+	elif _is_reward:
+		_anim_frames = PA.generate_animated_frames(
+			[ST.enemy_ref_melee_sprite, ST.enemy_ref_melee_sprite],
+			36, 36, [PA.MATERIAL_FLESH]
+		)
+		_anim_interval = 0.5
 	else:
 		_anim_frames = PA.generate_animated_frames(
 			[ST.enemy_ref_melee_sprite, ST.enemy_ref_melee_sprite],
@@ -183,6 +256,9 @@ func _ready() -> void:
 
 	if _is_boss:
 		_boss_cooldown = randf_range(3.0, 5.0)
+	if _is_egg:
+		_egg_timer = 5.0
+		_enter_egg(EggState.INCUBATING)
 		EventBus.boss_spawned.emit(enemy_data.enemy_name, health.max_hp)
 		EventBus.boss_damaged.emit(health.current_hp, health.max_hp)
 
@@ -190,6 +266,9 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not health.is_alive():
 		return
+
+	# Check for nearby buffer auras
+	_update_buff_status()
 
 	# Face player
 	if _player and is_instance_valid(_player):
@@ -215,6 +294,14 @@ func _physics_process(delta: float) -> void:
 		_process_charger(delta)
 	elif _is_ranged:
 		_process_ranged(delta)
+	elif _is_spawner:
+		_process_spawner(delta)
+	elif _is_egg:
+		_process_egg(delta)
+	elif _is_buffer:
+		_process_buffer(delta)
+	elif _is_reward:
+		_process_reward(delta)
 	else:
 		_process_melee(delta)
 
@@ -266,7 +353,7 @@ func _process_melee(delta: float) -> void:
 				_enter_melee(MeleeState.FLANKING)
 
 		MeleeState.FLANKING:
-			velocity = _flank_direction * _ed("flank_speed", 200.0)
+			velocity = _flank_direction * _ed("flank_speed", 200.0) * _buff_speed_mult
 			move_and_slide()
 			_flank_moved += _ed("flank_speed", 200.0) * delta
 			if _flank_moved >= _ed("flank_distance", 100.0):
@@ -278,7 +365,7 @@ func _process_melee(delta: float) -> void:
 			var t := minf(_charge_timer / cd, 1.0)
 			var mult := minf(0.5 + t * 2.0, 1.5)
 			var dir := (_charge_target - global_position).normalized()
-			velocity = dir * _ed("charge_speed", 500.0) * mult
+			velocity = dir * _ed("charge_speed", 500.0) * mult * _buff_speed_mult
 			move_and_slide()
 			if _charge_timer >= cd:
 				_enter_melee(MeleeState.FLANKING)
@@ -313,7 +400,7 @@ func _process_ranged(delta: float) -> void:
 				_enter_ranged(RangedState.SHOOTING)
 			else:
 				var dir := (_player.global_position - global_position).normalized()
-				velocity = dir * _ed("approach_speed", 120.0)
+				velocity = dir * _ed("approach_speed", 120.0) * _buff_speed_mult
 				move_and_slide()
 
 		RangedState.SHOOTING:
@@ -329,7 +416,7 @@ func _process_ranged(delta: float) -> void:
 				velocity = Vector2.ZERO
 
 		RangedState.EVADING:
-			velocity = _evade_direction * _ed("evade_speed", 250.0)
+			velocity = _evade_direction * _ed("evade_speed", 250.0) * _buff_speed_mult
 			move_and_slide()
 			_evade_moved += _ed("evade_speed", 250.0) * delta
 			if _evade_moved >= _ed("evade_distance", 80.0):
@@ -363,7 +450,7 @@ func _process_charger(delta: float) -> void:
 				_enter_charger(ChargerState.CHARGE_PREP)
 			else:
 				var dir := (_player.global_position - global_position).normalized()
-				velocity = dir * _ed("move_speed", 150.0)
+				velocity = dir * _ed("move_speed", 150.0) * _buff_speed_mult
 				move_and_slide()
 
 		ChargerState.CHARGE_PREP:
@@ -378,7 +465,7 @@ func _process_charger(delta: float) -> void:
 
 		ChargerState.CHARGING:
 			_c_stun_timer -= delta
-			velocity = _c_charge_dir * _ed("charge_speed", 500.0)
+			velocity = _c_charge_dir * _ed("charge_speed", 500.0) * _buff_speed_mult
 			move_and_slide()
 			if _c_stun_timer <= 0.0:
 				_enter_charger(ChargerState.STUN)
@@ -434,7 +521,7 @@ func _process_exploder(delta: float) -> void:
 					_enter_exploder(ExploderState.WARNING)
 				else:
 					var dir := (_player.global_position - global_position).normalized()
-					velocity = dir * _ed("move_speed", 250.0)
+					velocity = dir * _ed("move_speed", 250.0) * _buff_speed_mult
 					move_and_slide()
 
 		ExploderState.WARNING:
@@ -521,7 +608,7 @@ func _process_knockback(delta: float) -> void:
 			else:
 				_enter_melee(MeleeState.FLANKING)
 		return
-	velocity = _knockback_velocity
+	velocity = _knockback_velocity * _buff_speed_mult
 	move_and_slide()
 
 
@@ -537,7 +624,7 @@ func _check_contact_damage(delta: float) -> void:
 		return
 	if global_position.distance_to(_player.global_position) <= enemy_data.contact_radius:
 		_contact_timer = 0.0
-		_player.take_damage(enemy_data.contact_damage, "melee", self, 0.0)
+		_player.take_damage(int(enemy_data.contact_damage * _buff_damage_mult), "melee", self, 0.0)
 
 
 # --- Death ---
@@ -547,6 +634,12 @@ func _on_death() -> void:
 		EventBus.boss_killed.emit(enemy_data.enemy_name if enemy_data else "Boss")
 	if _is_exploder:
 		_explode(60.0, 25)
+	# Spawner: spawn minions on death
+	if _is_spawner:
+		_spawn_minions()
+	# Reward: drop health on death
+	if _is_reward:
+		_drop_reward()
 	# Kill explosion upgrade
 	var ua := get_node_or_null("/root/Main/Systems/UpgradeApplier")
 	if ua:
@@ -554,6 +647,27 @@ func _on_death() -> void:
 		if kill_dmg > 0.0:
 			_explode(60.0, int(kill_dmg))
 	queue_free()
+
+
+func _spawn_minions() -> void:
+	var count := randi_range(2, 3)
+	var container := get_parent()
+	if not container:
+		return
+	var data := GameConfig.get_enemy_data("melee_enemy") as EnemyData
+	if not data:
+		return
+	for i in count:
+		var minion_data := data.duplicate() as EnemyData
+		minion_data.max_hp = maxi(5, data.max_hp / 4)
+		minion_data.move_speed = data.move_speed * 1.6
+		minion_data.contact_damage = maxi(3, data.contact_damage / 3)
+		minion_data.flank_speed = data.flank_speed * 1.3
+		minion_data.charge_speed = data.charge_speed * 1.2
+		var minion := _enemy_scene.instantiate() as Enemy
+		minion.enemy_data = minion_data
+		minion.global_position = global_position + Vector2(randf_range(-30, 30), randf_range(-30, 30))
+		container.add_child(minion)
 
 
 # --- Boss AI ---
@@ -577,7 +691,7 @@ func _process_boss(delta: float) -> void:
 				var speed := _ed("move_speed", 120.0)
 				if _boss_phase == BossPhase.PHASE_2:
 					speed *= 1.3
-				velocity = dir * speed
+				velocity = dir * speed * _buff_speed_mult
 				move_and_slide()
 
 		BossState.CHARGE_WINDUP:
@@ -590,7 +704,7 @@ func _process_boss(delta: float) -> void:
 
 		BossState.CHARGING:
 			_boss_timer -= delta
-			velocity = _boss_charge_dir * _ed("charge_speed", 600.0)
+			velocity = _boss_charge_dir * _ed("charge_speed", 600.0) * _buff_speed_mult
 			move_and_slide()
 			if _boss_timer <= 0.0:
 				_enter_boss(BossState.STUN)
@@ -656,6 +770,132 @@ func _enter_boss(new_state: BossState) -> void:
 
 		BossState.SPAWN:
 			pass
+
+
+# --- Spawning Enemy AI (D-class: spawns minions on death) ---
+
+func _process_spawner(delta: float) -> void:
+	match _s_state:
+		SpawningState.SPAWN:
+			_spawn_timer -= delta
+			if _spawn_timer <= 0.0:
+				_enter_spawner(SpawningState.TRACKING)
+		SpawningState.TRACKING:
+			if _player and is_instance_valid(_player):
+				var dir := (_player.global_position - global_position).normalized()
+				velocity = dir * _ed("move_speed", 120.0) * _buff_speed_mult
+				move_and_slide()
+
+
+func _enter_spawner(new_state: SpawningState) -> void:
+	_s_state = new_state
+
+
+# --- Egg Enemy AI (D-class: stationary, hatches into elite charger) ---
+
+func _process_egg(delta: float) -> void:
+	match _eg_state:
+		EggState.SPAWN:
+			_spawn_timer -= delta
+			if _spawn_timer <= 0.0:
+				_enter_egg(EggState.INCUBATING)
+		EggState.INCUBATING:
+			_egg_timer -= delta
+			var pulse := 1.0 + sin(_egg_timer * 3.0) * 0.15
+			_set_sprite_scale(pulse, pulse)
+			if _egg_timer <= 0.0:
+				_hatch()
+
+
+func _enter_egg(new_state: EggState) -> void:
+	_eg_state = new_state
+	match new_state:
+		EggState.INCUBATING:
+			_egg_timer = 5.0
+		EggState.SPAWN:
+			pass
+
+
+func _hatch() -> void:
+	if not is_instance_valid(_player):
+		queue_free()
+		return
+	var data := GameConfig.get_enemy_data("charger") as EnemyData
+	if data:
+		var elite_data := data.duplicate() as EnemyData
+		elite_data.is_elite = true
+		elite_data.max_hp = int(elite_data.max_hp * elite_data.elite_hp_mult)
+		elite_data.contact_damage = int(elite_data.contact_damage * elite_data.elite_damage_mult)
+		var enemy := _enemy_scene.instantiate() as Enemy
+		enemy.enemy_data = elite_data
+		enemy.global_position = global_position
+		var container := get_parent()
+		if container:
+			container.add_child(enemy)
+	EventBus.vfx_requested.emit("explosion", global_position)
+	queue_free()
+
+
+func _update_buff_status() -> void:
+	_buff_damage_mult = 1.0
+	_buff_speed_mult = 1.0
+	if _is_buffer:
+		return
+	var buffers := get_tree().get_nodes_in_group("buffers")
+	for b in buffers:
+		if b == self or not is_instance_valid(b):
+			continue
+		var buf := b as Node2D
+		if buf and global_position.distance_to(buf.global_position) <= (buf as Enemy)._aura_radius:
+			_buff_damage_mult = 1.3
+			_buff_speed_mult = 1.2
+			break
+
+
+# --- Buffer Enemy AI (E-class: buffs nearby enemies) ---
+
+func _process_buffer(delta: float) -> void:
+	match _b_state:
+		BufferState.SPAWN:
+			_spawn_timer -= delta
+			if _spawn_timer <= 0.0:
+				_enter_buffer(BufferState.ACTIVE)
+		BufferState.ACTIVE:
+			if _player and is_instance_valid(_player):
+				var dir := (_player.global_position - global_position).normalized()
+				velocity = dir * _ed("move_speed", 60.0)
+			move_and_slide()
+
+
+func _enter_buffer(new_state: BufferState) -> void:
+	_b_state = new_state
+
+
+# --- Reward Enemy AI (E-class: drops health on death) ---
+
+func _process_reward(delta: float) -> void:
+	match _rw_state:
+		RewardState.SPAWN:
+			_spawn_timer -= delta
+			if _spawn_timer <= 0.0:
+				_enter_reward(RewardState.FLEEING)
+		RewardState.FLEEING:
+			if _player and is_instance_valid(_player):
+				var away := (global_position - _player.global_position).normalized()
+				var wobble := Vector2(randf_range(-0.4, 0.4), randf_range(-0.4, 0.4))
+				velocity = (away + wobble).normalized() * _ed("move_speed", 260.0)
+			move_and_slide()
+
+
+func _enter_reward(new_state: RewardState) -> void:
+	_rw_state = new_state
+
+
+func _drop_reward() -> void:
+	if _player and is_instance_valid(_player):
+		var heal_amount := int(_player.health.max_hp * 0.2)
+		_player.heal(heal_amount)
+
 
 
 func _find_player() -> void:

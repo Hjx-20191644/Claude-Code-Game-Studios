@@ -40,7 +40,7 @@ class_name EnemyData
 
 
 func validate() -> void:
-	assert(enemy_type in ["melee", "ranged", "charger", "exploder", "tank", "boss"], "EnemyData: unknown enemy_type '%s'" % enemy_type)
+	assert(enemy_type in ["melee", "ranged", "charger", "exploder", "tank", "boss", "spawner", "egg", "buffer", "reward"], "EnemyData: unknown enemy_type '%s'" % enemy_type)
 	assert(max_hp >= 1, "EnemyData: max_hp must be >= 1")
 	assert(move_speed >= 50.0, "EnemyData: move_speed must be >= 50")
 	assert(contact_damage >= 0, "EnemyData: contact_damage must be >= 0")

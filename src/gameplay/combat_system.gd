@@ -86,16 +86,35 @@ func _update_aim_direction() -> void:
 
 func _find_nearest_enemy() -> Node2D:
 	var closest: Node2D = null
-	var closest_dist: float = INF
+	var closest_weighted: float = INF
 	for child in _arena_enemies.get_children():
 		if not child.has_method("take_damage"):
 			continue
 		var enemy := child as Node2D
 		var dist := player.global_position.distance_squared_to(enemy.global_position)
-		if dist < closest_dist:
-			closest_dist = dist
+		var weighted := dist * _get_enemy_priority(child)
+		if weighted < closest_weighted:
+			closest_weighted = weighted
 			closest = enemy
 	return closest
+
+
+func _get_enemy_priority(enemy: Node) -> float:
+	var e := enemy as Enemy
+	if not e or not e.enemy_data:
+		return 1.0
+	match e.enemy_data.enemy_type:
+		"buffer":   return 0.25
+		"ranged":   return 0.4
+		"spawner":  return 0.5
+		"egg":      return 0.55
+		"charger":  return 0.65
+		"exploder": return 0.7
+		"melee":    return 0.8
+		"tank":     return 1.0
+		"reward":   return 1.5
+		"boss":     return 1.0
+		_:          return 1.0
 
 
 func _update_cooldowns(delta: float) -> void:

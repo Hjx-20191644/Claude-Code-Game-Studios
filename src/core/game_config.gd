@@ -30,10 +30,11 @@ const CONTACT_DAMAGE_COOLDOWN: float = 0.5
 
 # --- Visual ---
 const SPRITE_SCALE: float = 1.0
+const ENTITY_SCALE: float = 0.5
 
 # --- Arena ---
-const ARENA_WIDTH: float = 750.0
-const ARENA_HEIGHT: float = 450.0
+const ARENA_WIDTH: float = 1400.0
+const ARENA_HEIGHT: float = 800.0
 
 # --- Collision Layers ---
 const LAYER_PLAYER: int = 1
