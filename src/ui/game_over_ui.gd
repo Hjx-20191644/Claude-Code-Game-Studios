@@ -57,7 +57,7 @@ func _build_ui() -> void:
 	panel.add_theme_constant_override("separation", 12)
 
 	_title_label = Label.new()
-	_title_label.text = "Hunt Over"
+	_title_label.text = Locale.t("hunt_over")
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.add_theme_font_size_override("font_size", 28)
 	_title_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
@@ -67,18 +67,18 @@ func _build_ui() -> void:
 	spacer1.custom_minimum_size = Vector2(0, 12)
 	panel.add_child(spacer1)
 
-	_score_label = _make_stat_label("Score: 0")
+	_score_label = _make_stat_label("%s: 0" % Locale.t("score"))
 	panel.add_child(_score_label)
-	_wave_label = _make_stat_label("Wave: 0")
+	_wave_label = _make_stat_label("%s: 0" % Locale.t("wave"))
 	panel.add_child(_wave_label)
-	_kills_label = _make_stat_label("Kills: 0")
+	_kills_label = _make_stat_label("%s: 0" % Locale.t("kills"))
 	panel.add_child(_kills_label)
-	_time_label = _make_stat_label("Time: 0:00")
+	_time_label = _make_stat_label("%s: 0:00" % Locale.t("time"))
 	panel.add_child(_time_label)
 
 	# Shards earned this run
 	_shard_label = Label.new()
-	_shard_label.text = "Shards Earned: 0"
+	_shard_label.text = "%s: 0" % Locale.t("shards_earned")
 	_shard_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_shard_label.add_theme_font_size_override("font_size", 16)
 	_shard_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 0.95))
@@ -89,14 +89,14 @@ func _build_ui() -> void:
 	panel.add_child(spacer2)
 
 	_continue_button = Button.new()
-	_continue_button.text = "Continue"
+	_continue_button.text = Locale.t("continue")
 	_continue_button.add_theme_font_size_override("font_size", 16)
 	_continue_button.custom_minimum_size = Vector2(150, 38)
 	_continue_button.pressed.connect(_on_continue_pressed)
 	panel.add_child(_continue_button)
 
 	_play_again_button = Button.new()
-	_play_again_button.text = "Play Again"
+	_play_again_button.text = Locale.t("play_again")
 	_play_again_button.add_theme_font_size_override("font_size", 14)
 	_play_again_button.custom_minimum_size = Vector2(150, 30)
 	_play_again_button.pressed.connect(_on_play_again_pressed)
@@ -110,12 +110,12 @@ func _refresh_stats() -> void:
 
 	if _score_manager:
 		var s := _score_manager.get_stats()
-		_score_label.text = "Score: %d" % s.score
-		_wave_label.text = "Wave: %d" % s.wave_reached
-		_kills_label.text = "Kills: %d" % s.total_kills
-		_time_label.text = "Time: %s" % _format_time(s.survival_time)
+		_score_label.text = "%s: %d" % [Locale.t("score"), s.score]
+		_wave_label.text = "%s: %d" % [Locale.t("wave"), s.wave_reached]
+		_kills_label.text = "%s: %d" % [Locale.t("kills"), s.total_kills]
+		_time_label.text = "%s: %s" % [Locale.t("time"), _format_time(s.survival_time)]
 
-	_shard_label.text = "Shards Earned: %d" % shards_earned
+	_shard_label.text = "%s: %d" % [Locale.t("shards_earned"), shards_earned]
 
 	# Persist the run results
 	_save_and_notify(shards_earned)

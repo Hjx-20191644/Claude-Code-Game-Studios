@@ -20,6 +20,7 @@ enum BossPhase { PHASE_1, PHASE_2 }
 @onready var sprite: Sprite2D = $Sprite
 
 var _base_scale: float = 1.0
+var _facing: int = 1
 var _anim_frames: Array[ImageTexture] = []
 var _anim_frame: int = 0
 var _anim_timer: float = 0.0
@@ -132,7 +133,7 @@ func _ready() -> void:
 			sprite.self_modulate = Color(0.3, 0.7, 1.0)
 			_base_scale = 1.0
 
-	sprite.scale = Vector2(_base_scale, _base_scale)
+	_set_sprite_scale(1.0, 1.0)
 
 	health.died.connect(_on_death)
 	_find_player()
@@ -189,6 +190,10 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	if not health.is_alive():
 		return
+
+	# Face player
+	if _player and is_instance_valid(_player):
+		_facing = 1 if _player.global_position.x >= global_position.x else -1
 
 	# Idle animation
 	if _anim_frames.size() > 0 and sprite.visible:
@@ -365,9 +370,9 @@ func _process_charger(delta: float) -> void:
 			_c_prep_timer -= delta
 			var pulse := 1.0 + sin(_c_prep_timer * 20.0) * 0.3
 			if enemy_data.is_elite:
-				sprite.scale = Vector2(_base_scale * pulse, _base_scale * pulse)
+				_set_sprite_scale(pulse, pulse)
 			else:
-				sprite.scale = Vector2(_base_scale * pulse, _base_scale * pulse)
+				_set_sprite_scale(pulse, pulse)
 			if _c_prep_timer <= 0.0:
 				_enter_charger(ChargerState.CHARGING)
 
@@ -397,16 +402,16 @@ func _enter_charger(new_state: ChargerState) -> void:
 			_c_stun_timer = 0.5
 			# Elongate during charge
 			if not enemy_data.is_elite:
-				sprite.scale = Vector2(_base_scale * 1.5, _base_scale * 0.7)
+				_set_sprite_scale(1.5, 0.7)
 		ChargerState.STUN:
 			_c_prep_timer = 1.2
 			if not enemy_data.is_elite:
-				sprite.scale = Vector2(_base_scale * 0.8, _base_scale * 0.8)
+				_set_sprite_scale(0.8, 0.8)
 			sprite.self_modulate = Color(0.6, 0.15, 0.07)
 		ChargerState.TRACKING:
 			_c_cooldown_timer = randf_range(4.0, 7.0)
 			if not enemy_data.is_elite:
-				sprite.scale = Vector2(_base_scale, _base_scale)
+				_set_sprite_scale(1.0, 1.0)
 			sprite.visible = true
 			sprite.self_modulate = Color(0.9, 0.2, 0.1)
 		ChargerState.SPAWN:
@@ -578,7 +583,7 @@ func _process_boss(delta: float) -> void:
 		BossState.CHARGE_WINDUP:
 			_boss_timer -= delta
 			var pulse := 1.0 + sin(_boss_timer * 18.0) * 0.2
-			sprite.scale = Vector2(_base_scale * pulse, _base_scale * pulse)
+			_set_sprite_scale(pulse, pulse)
 			velocity = Vector2.ZERO
 			if _boss_timer <= 0.0:
 				_enter_boss(BossState.CHARGING)
@@ -601,7 +606,7 @@ func _process_boss(delta: float) -> void:
 		BossState.SLAM_WINDUP:
 			_boss_timer -= delta
 			var pulse := 1.0 + sin(_boss_timer * 15.0) * 0.35
-			sprite.scale = Vector2(_base_scale * pulse, _base_scale * pulse)
+			_set_sprite_scale(pulse, pulse)
 			sprite.self_modulate = Color(2.0, 2.0, 2.0)
 			velocity = Vector2.ZERO
 			if _boss_timer <= 0.0:
@@ -624,7 +629,7 @@ func _enter_boss(new_state: BossState) -> void:
 			if _boss_phase == BossPhase.PHASE_2:
 				_boss_cooldown *= 0.7
 			sprite.visible = true
-			sprite.scale = Vector2(_base_scale, _base_scale)
+			_set_sprite_scale(1.0, 1.0)
 			if _boss_phase == BossPhase.PHASE_1:
 				sprite.self_modulate = Color(0.7, 0.15, 0.1)
 			else:
@@ -636,11 +641,11 @@ func _enter_boss(new_state: BossState) -> void:
 
 		BossState.CHARGING:
 			_boss_timer = _ed("charge_duration", 0.6)
-			sprite.scale = Vector2(_base_scale * 1.5, _base_scale * 0.7)
+			_set_sprite_scale(1.5, 0.7)
 
 		BossState.STUN:
 			_boss_timer = 0.8
-			sprite.scale = Vector2(_base_scale * 0.9, _base_scale * 0.9)
+			_set_sprite_scale(0.9, 0.9)
 			sprite.self_modulate = Color(0.5, 0.1, 0.07)
 
 		BossState.SLAM_WINDUP:
@@ -657,6 +662,11 @@ func _find_player() -> void:
 	var players := get_tree().get_nodes_in_group("players")
 	if players.size() > 0:
 		_player = players[0] as Player
+
+
+## Apply sprite scale with facing direction.
+func _set_sprite_scale(x_mult: float, y_mult: float) -> void:
+	sprite.scale = Vector2(_base_scale * x_mult * _facing, _base_scale * y_mult)
 
 
 ## Safe enemy_data field access with fallback.

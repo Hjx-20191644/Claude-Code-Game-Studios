@@ -79,7 +79,7 @@ func _on_boss_spawned(boss_name: String, max_hp: int) -> void:
 	_displayed_width = bar_width
 	_bar_fill.size.x = bar_width
 	_name_label.text = boss_name
-	_phase_label.text = "Phase 1"
+	_phase_label.text = "%s 1" % Locale.t("phase")
 	show()
 	# Fade in
 	modulate.a = 0.0
@@ -96,7 +96,7 @@ func _on_boss_damaged(current_hp: int, max_hp: int) -> void:
 
 
 func _on_boss_phase_changed(phase: int) -> void:
-	_phase_label.text = "Phase %d" % phase
+	_phase_label.text = "%s %d" % [Locale.t("phase"), phase] % phase
 	# Flash phase label
 	var tw := create_tween()
 	tw.tween_property(_phase_label, "modulate:a", 0.0, 0.1)

@@ -40,7 +40,7 @@ func _build_ui() -> void:
 	panel.add_theme_constant_override("separation", 16)
 
 	var title := Label.new()
-	title.text = "Leaderboard"
+	title.text = Locale.t("leaderboard")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 36)
 	title.add_theme_color_override("font_color", Color(1.0, 0.84, 0.0))
@@ -51,7 +51,7 @@ func _build_ui() -> void:
 	panel.add_child(spacer)
 
 	# Column headers
-	var header := _make_row(["#", "Score", "Wave", "Kills", "Time"], true)
+	var header := _make_row([Locale.t("rank_col"), Locale.t("score"), Locale.t("wave_col"), Locale.t("kills_col"), Locale.t("time_col")], true)
 	panel.add_child(header)
 
 	var sep := HSeparator.new()
@@ -67,7 +67,7 @@ func _build_ui() -> void:
 	panel.add_child(spacer2)
 
 	var back_btn := Button.new()
-	back_btn.text = "Back"
+	back_btn.text = Locale.t("back")
 	back_btn.add_theme_font_size_override("font_size", 20)
 	back_btn.custom_minimum_size = Vector2(180, 44)
 	back_btn.pressed.connect(_on_back)
@@ -83,7 +83,7 @@ func _refresh() -> void:
 	var entries := LeaderboardManager.load_entries()
 	if entries.is_empty():
 		var empty := Label.new()
-		empty.text = "  No records yet"
+		empty.text = "  %s" % Locale.t("no_records")
 		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		empty.add_theme_font_size_override("font_size", 16)
 		empty.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.4))

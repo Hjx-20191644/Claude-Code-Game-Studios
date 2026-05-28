@@ -139,7 +139,7 @@ func _build_score_labels() -> void:
 
 	# Wave
 	_wave_label = Label.new()
-	_wave_label.text = "Wave 0"
+	_wave_label.text = "%s 0" % Locale.t("wave")
 	_wave_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_wave_label.add_theme_font_size_override("font_size", 13)
 	_wave_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.7))
@@ -148,7 +148,7 @@ func _build_score_labels() -> void:
 
 	# Kills
 	_kills_label = Label.new()
-	_kills_label.text = "Kills: 0"
+	_kills_label.text = "%s: 0" % Locale.t("kills")
 	_kills_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_kills_label.add_theme_font_size_override("font_size", 11)
 	_kills_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.5))
@@ -157,7 +157,7 @@ func _build_score_labels() -> void:
 
 	# Shards
 	_shard_label = Label.new()
-	_shard_label.text = "Shards: 0"
+	_shard_label.text = "%s: 0" % Locale.t("shards")
 	_shard_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_shard_label.add_theme_font_size_override("font_size", 11)
 	_shard_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 0.8))
@@ -168,23 +168,23 @@ func _build_score_labels() -> void:
 func _on_score_changed(new_score: int) -> void:
 	_score_label.text = str(new_score)
 	if _score_manager:
-		_kills_label.text = "Kills: %d" % _score_manager.get_total_kills()
+		_kills_label.text = "%s: %d" % [Locale.t("kills"), _score_manager.get_total_kills()]
 
 
 func _on_wave_started(wave_number: int) -> void:
 	if wave_number == 1:
 		modulate.a = 1.0  # Reset death fade
-	_wave_label.text = "Wave %d" % wave_number
+	_wave_label.text = "%s %d" % [Locale.t("wave"), wave_number]
 	_show_wave_announce(wave_number)
 
 
 func _on_wave_completed(_wave_number: int) -> void:
 	if _score_manager:
-		_kills_label.text = "Kills: %d" % _score_manager.get_total_kills()
+		_kills_label.text = "%s: %d" % [Locale.t("kills"), _score_manager.get_total_kills()]
 
 
 func _on_shard_collected(_amount: int, run_total: int) -> void:
-	_shard_label.text = "Shards: %d" % run_total
+	_shard_label.text = "%s: %d" % [Locale.t("shards"), run_total]
 
 
 func _on_player_died() -> void:
@@ -207,7 +207,7 @@ func _build_wave_announce() -> void:
 
 
 func _show_wave_announce(wave_number: int) -> void:
-	_wave_announce.text = "Wave %d" % wave_number
+	_wave_announce.text = "%s %d" % [Locale.t("wave"), wave_number]
 	_wave_announce.modulate.a = 1.0
 
 	var tw := create_tween()

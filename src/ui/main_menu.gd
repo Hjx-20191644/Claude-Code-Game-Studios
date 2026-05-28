@@ -16,6 +16,7 @@ func _ready() -> void:
 	_settings_ui = get_node_or_null("SettingsUI") as SettingsUI
 	_weapon_select_ui = get_node_or_null("WeaponSelectUI") as WeaponSelectUI
 	_unlock_tree_panel = get_node_or_null("UnlockTreePanel") as UnlockTreePanel
+	SettingsManager.init_lang()
 	SettingsManager.apply_window_mode()
 	_build_ui()
 
@@ -52,14 +53,14 @@ func _build_ui() -> void:
 	panel.add_theme_constant_override("separation", 24)
 
 	var title := Label.new()
-	title.text = "Hunting Ground"
+	title.text = Locale.t("hunting_ground")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 48)
 	title.add_theme_color_override("font_color", Color(0.3, 0.7, 1.0))
 	panel.add_child(title)
 
 	var subtitle := Label.new()
-	subtitle.text = "Arena Survival Roguelite"
+	subtitle.text = Locale.t("arena_survival")
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	subtitle.add_theme_font_size_override("font_size", 18)
 	subtitle.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.5))
@@ -71,16 +72,16 @@ func _build_ui() -> void:
 
 	_main_panel = panel
 
-	var start_btn := _make_button("Start Game", _on_start)
+	var start_btn := _make_button(Locale.t("start_game"), _on_start)
 	panel.add_child(start_btn)
 
-	var upgrade_btn := _make_button("Meta Upgrades", _on_upgrades)
+	var upgrade_btn := _make_button(Locale.t("meta_upgrades"), _on_upgrades)
 	panel.add_child(upgrade_btn)
 
-	var lb_btn := _make_button("Leaderboard", _on_leaderboard)
+	var lb_btn := _make_button(Locale.t("leaderboard"), _on_leaderboard)
 	panel.add_child(lb_btn)
 
-	var settings_btn := _make_button("Settings", _on_settings)
+	var settings_btn := _make_button(Locale.t("settings"), _on_settings)
 	panel.add_child(settings_btn)
 
 	# Shard display at bottom
@@ -92,17 +93,17 @@ func _build_ui() -> void:
 	_shard_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_shard_label.add_theme_font_size_override("font_size", 18)
 	_shard_label.add_theme_color_override("font_color", Color(0.2, 0.9, 1.0, 0.85))
-	_shard_label.text = "Shards: %d" % MetaProgress.get_shards()
+	_shard_label.text = "%s: %d" % [Locale.t("shards"), MetaProgress.get_shards()]
 	panel.add_child(_shard_label)
 
-	var quit_btn := _make_button("Quit", _on_quit)
+	var quit_btn := _make_button(Locale.t("quit"), _on_quit)
 	panel.add_child(quit_btn)
 
 	center.add_child(panel)
 
 
 func _on_shards_changed(_total: int = 0) -> void:
-	_shard_label.text = "Shards: %d" % MetaProgress.get_shards()
+	_shard_label.text = "%s: %d" % [Locale.t("shards"), MetaProgress.get_shards()]
 
 
 func _on_start() -> void:

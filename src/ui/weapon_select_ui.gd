@@ -77,7 +77,7 @@ func _build_ui() -> void:
 	panel.add_theme_constant_override("separation", 16)
 
 	var title := Label.new()
-	title.text = "Select Weapons"
+	title.text = Locale.t("select_weapons")
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", Color(0.3, 0.7, 1.0))
@@ -96,7 +96,7 @@ func _build_ui() -> void:
 	left_col.add_theme_constant_override("separation", 8)
 
 	var left_label := Label.new()
-	left_label.text = "Left Hand (Melee/Ranged)"
+	left_label.text = "%s (Melee/Ranged)" % Locale.t("left_hand")
 	left_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	left_label.add_theme_font_size_override("font_size", 12)
 	left_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.7))
@@ -118,7 +118,7 @@ func _build_ui() -> void:
 	right_col.add_theme_constant_override("separation", 8)
 
 	var right_label := Label.new()
-	right_label.text = "Right Hand (Melee/Ranged)"
+	right_label.text = "%s (Melee/Ranged)" % Locale.t("right_hand")
 	right_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	right_label.add_theme_font_size_override("font_size", 12)
 	right_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.7))
@@ -145,14 +145,14 @@ func _build_ui() -> void:
 	btns.add_theme_constant_override("separation", 16)
 
 	var back_btn := Button.new()
-	back_btn.text = "Back"
+	back_btn.text = Locale.t("back")
 	back_btn.add_theme_font_size_override("font_size", 16)
 	back_btn.custom_minimum_size = Vector2(140, 44)
 	back_btn.pressed.connect(_on_back)
 	btns.add_child(back_btn)
 
 	var start_btn := Button.new()
-	start_btn.text = "Start Game"
+	start_btn.text = Locale.t("start_game")
 	start_btn.add_theme_font_size_override("font_size", 16)
 	start_btn.custom_minimum_size = Vector2(180, 44)
 	start_btn.pressed.connect(_on_start)
@@ -316,16 +316,16 @@ func _refresh_stats() -> void:
 
 func _stats_text(w: WeaponData) -> String:
 	if w.weapon_type == "melee":
-		return "DMG:%d  CD:%.2fs  Angle:%d°  Range:%d" % [w.base_damage, w.attack_cooldown, int(w.melee_angle), int(w.melee_radius)]
+		return "%s:%d  %s:%.2fs  %s:%d°  %s:%d" % [Locale.t("dmg"), w.base_damage, Locale.t("cd"), w.attack_cooldown, Locale.t("angle"), int(w.melee_angle), Locale.t("range"), int(w.melee_radius)]
 	else:
 		var extra := ""
 		if w.pierce_count > 0:
-			extra += " Pierce:%d" % w.pierce_count
+			extra += " %s:%d" % [Locale.t("pierce"), w.pierce_count]
 		if w.explosive_radius > 0.0:
-			extra += " Explosive"
+			extra += " %s" % Locale.t("explosive")
 		if w.bullet_count > 1:
 			extra += " x%d" % w.bullet_count
-		return "DMG:%d  CD:%.2fs  Ammo:%d  Range:%d%s" % [w.base_damage, w.attack_cooldown, w.max_ammo, int(w.max_range), extra]
+		return "%s:%d  %s:%.2fs  %s:%d  %s:%d%s" % [Locale.t("dmg"), w.base_damage, Locale.t("cd"), w.attack_cooldown, Locale.t("ammo"), w.max_ammo, Locale.t("range"), int(w.max_range), extra]
 
 
 func _file_id(w: WeaponData) -> String:

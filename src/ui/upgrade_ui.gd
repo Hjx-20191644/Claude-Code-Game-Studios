@@ -319,7 +319,7 @@ func _build_ui() -> void:
 	add_child(_overlay)
 
 	_title_label = Label.new()
-	_title_label.text = "Choose an Upgrade"
+	_title_label.text = Locale.t("choose_upgrade")
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.add_theme_font_size_override("font_size", 16)
 	_title_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.9))
@@ -356,7 +356,7 @@ func _refresh_acquired_list() -> void:
 		child.queue_free()
 
 	var label := Label.new()
-	label.text = "Acquired:"
+	label.text = Locale.t("acquired") + ":"
 	label.add_theme_font_size_override("font_size", 11)
 	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.6))
 	_acquired_list.add_child(label)
@@ -364,7 +364,7 @@ func _refresh_acquired_list() -> void:
 	var acquired := _upgrade_pool.get_all_acquired()
 	if acquired.is_empty():
 		var empty := Label.new()
-		empty.text = "  (none)"
+		empty.text = "  %s" % Locale.t("none")
 		empty.add_theme_font_size_override("font_size", 9)
 		empty.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 0.3))
 		_acquired_list.add_child(empty)

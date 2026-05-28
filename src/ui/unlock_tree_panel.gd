@@ -44,7 +44,7 @@ func _build_ui() -> void:
 
 	# Header
 	_title_label = Label.new()
-	_title_label.text = "Meta Upgrades"
+	_title_label.text = Locale.t("meta_upgrades")
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.add_theme_font_size_override("font_size", 32)
 	_title_label.add_theme_color_override("font_color", Color(0.3, 0.7, 1.0))
@@ -83,7 +83,7 @@ func _build_ui() -> void:
 	vbox.add_child(_status_label)
 
 	_back_button = Button.new()
-	_back_button.text = "Back"
+	_back_button.text = Locale.t("back")
 	_back_button.add_theme_font_size_override("font_size", 20)
 	_back_button.custom_minimum_size = Vector2(180, 44)
 	_back_button.pressed.connect(_on_back)
@@ -95,7 +95,7 @@ func _build_grid() -> void:
 		child.queue_free()
 
 	if not _tree_manager:
-		_status_label.text = "Unlock data not available"
+		_status_label.text = Locale.t("no_unlock_data")
 		return
 
 	var all: Array = _tree_manager.get_all_unlocks()
@@ -140,13 +140,13 @@ func _make_card(ul: Resource) -> Control:
 	# Cost / Status
 	var cost_label := Label.new()
 	if unlocked:
-		cost_label.text = "Unlocked"
+		cost_label.text = Locale.t("unlocked")
 		cost_label.add_theme_color_override("font_color", Color(0.3, 0.9, 0.3))
 	elif not prereqs_met:
-		cost_label.text = "Requires: %s" % ", ".join(ul.prerequisites)
+		cost_label.text = "%s: %s" % [Locale.t("requires"), ", ".join(ul.prerequisites)]
 		cost_label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 	else:
-		cost_label.text = "Cost: %d shards" % ul.cost
+		cost_label.text = "%s: %d %s" % [Locale.t("cost"), ul.cost, Locale.t("shard_unit")]
 		cost_label.add_theme_color_override("font_color", Color(0.8, 1.0, 0.3) if affordable else Color(1.0, 0.3, 0.3))
 	cost_label.add_theme_font_size_override("font_size", 14)
 	card.add_child(cost_label)
@@ -154,7 +154,7 @@ func _make_card(ul: Resource) -> Control:
 	# Purchase button
 	if can_buy:
 		var btn := Button.new()
-		btn.text = "Purchase"
+		btn.text = Locale.t("purchase")
 		btn.add_theme_font_size_override("font_size", 16)
 		btn.custom_minimum_size = Vector2(120, 36)
 		btn.pressed.connect(func(): _on_purchase(ul.id))
@@ -167,15 +167,15 @@ func _on_purchase(id: String) -> void:
 	if _tree_manager:
 		var ok: bool = _tree_manager.purchase(id)
 		if ok:
-			_status_label.text = "Purchased!"
+			_status_label.text = Locale.t("purchased")
 			_build_grid()
 			_refresh_shard_display()
 		else:
-			_status_label.text = "Cannot purchase: %s" % _tree_manager.get_purchase_block_reason(id)
+			_status_label.text = "%s: %s" % [Locale.t("cannot_purchase"), _tree_manager.get_purchase_block_reason(id)]
 
 
 func _refresh_shard_display() -> void:
-	_shard_label.text = "Shards: %d" % MetaProgress.get_shards()
+	_shard_label.text = "%s: %d" % [Locale.t("shards"), MetaProgress.get_shards()]
 
 
 func _on_shards_changed(_new_total: int) -> void:

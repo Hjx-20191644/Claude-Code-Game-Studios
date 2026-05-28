@@ -10,6 +10,7 @@ var _sfx_slider: HSlider
 var _master_label: Label
 var _sfx_label: Label
 var _fullscreen_btn: Button
+var _lang_btn: Button
 
 
 func _ready() -> void:
@@ -91,12 +92,20 @@ func _build_ui() -> void:
 	_fullscreen_btn.pressed.connect(_on_fullscreen_toggled)
 	panel.add_child(_fullscreen_btn)
 
+	# Language toggle
+	_lang_btn = Button.new()
+	_lang_btn.text = "Language: English"
+	_lang_btn.add_theme_font_size_override("font_size", 18)
+	_lang_btn.custom_minimum_size = Vector2(240, 44)
+	_lang_btn.pressed.connect(_on_lang_toggled)
+	panel.add_child(_lang_btn)
+
 	var spacer3 := Control.new()
 	spacer3.custom_minimum_size = Vector2(0, 12)
 	panel.add_child(spacer3)
 
 	var back_btn := Button.new()
-	back_btn.text = "Back"
+	back_btn.text = Locale.t("back")
 	back_btn.add_theme_font_size_override("font_size", 20)
 	back_btn.custom_minimum_size = Vector2(180, 44)
 	back_btn.pressed.connect(_on_back)
@@ -125,7 +134,13 @@ func _on_fullscreen_toggled() -> void:
 	var is_fs := not SettingsManager.is_fullscreen()
 	SettingsManager.set_fullscreen(is_fs)
 	SettingsManager.apply_window_mode()
-	_refresh_fullscreen_btn()
+	_refresh()
+
+
+func _on_lang_toggled() -> void:
+	var next_lang := Locale.Lang.EN if SettingsManager.get_lang() == Locale.Lang.ZH else Locale.Lang.ZH
+	SettingsManager.set_lang(next_lang)
+	_refresh()
 
 
 func _on_back() -> void:
@@ -134,13 +149,14 @@ func _on_back() -> void:
 		_on_back_callback.call()
 
 
-func _refresh_labels() -> void:
+func _refresh() -> void:
 	var mv := int(_master_slider.value)
 	var sv := int(_sfx_slider.value)
-	_master_label.text = "Master Volume: %d%%" % mv
-	_sfx_label.text = "SFX Volume: %d%%" % sv
-	_refresh_fullscreen_btn()
-
-
-func _refresh_fullscreen_btn() -> void:
+	_master_label.text = "%s: %d%%" % [Locale.t("master_volume"), mv]
+	_sfx_label.text = "%s: %d%%" % [Locale.t("sfx_volume"), sv]
 	_fullscreen_btn.text = SettingsManager.get_mode_label()
+	_lang_btn.text = "%s: %s" % [Locale.t("language"), SettingsManager.get_lang_label()]
+
+
+func _refresh_labels() -> void:
+	_refresh()

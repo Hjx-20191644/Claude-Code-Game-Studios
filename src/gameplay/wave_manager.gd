@@ -82,18 +82,10 @@ func _advance_to_next_wave() -> void:
 
 	# Count how many spawn batches we expect
 	_pending_spawn_batches = 0
-	if config.melee_count > 0:
-		_pending_spawn_batches += 1
-	if config.ranged_count > 0:
-		_pending_spawn_batches += 1
-	if config.charger_count > 0:
-		_pending_spawn_batches += 1
-	if config.exploder_count > 0:
-		_pending_spawn_batches += 1
-	if config.tank_count > 0:
-		_pending_spawn_batches += 1
-	if config.boss_count > 0:
-		_pending_spawn_batches += 1
+	for type in ["melee", "ranged", "charger", "exploder", "tank", "boss", "egg", "spawner", "buffer", "reward"]:
+		var count: int = config.get(type + "_count") as int
+		if count > 0:
+			_pending_spawn_batches += 1
 
 	_state = State.WAVE_ACTIVE
 	_wave_start_ticks = Time.get_ticks_msec()
@@ -101,12 +93,10 @@ func _advance_to_next_wave() -> void:
 	EventBus.wave_started.emit(_current_wave)
 
 	if _spawn_manager:
-		_spawn_manager.spawn_enemies("melee", config.melee_count, _current_wave)
-		_spawn_manager.spawn_enemies("ranged", config.ranged_count, _current_wave)
-		_spawn_manager.spawn_enemies("charger", config.charger_count, _current_wave)
-		_spawn_manager.spawn_enemies("exploder", config.exploder_count, _current_wave)
-		_spawn_manager.spawn_enemies("tank", config.tank_count, _current_wave)
-		_spawn_manager.spawn_enemies("boss", config.boss_count, _current_wave)
+		for type in ["melee", "ranged", "charger", "exploder", "tank", "boss", "egg", "spawner", "buffer", "reward"]:
+			var count: int = config.get(type + "_count") as int
+			if count > 0:
+				_spawn_manager.spawn_enemies(type, count, _current_wave)
 	else:
 		_all_spawned = true
 		_check_wave_complete()
@@ -218,11 +208,14 @@ func _get_wave_config(wave: int) -> WaveConfig:
 	config.ranged_count = last.ranged_count + loop_count * _wave_data.infinite_ranged_increment
 	config.charger_count = last.charger_count + loop_count
 	config.exploder_count = last.exploder_count + loop_count
-	config.tank_count = last.tank_count + maxi(0, loop_count - 1)
+	config.tank_count = last.tank_count + maxi(0, loop_count - 2)
+	config.egg_count = last.egg_count
+	config.spawner_count = last.spawner_count + maxi(0, loop_count - 1)
+	config.buffer_count = last.buffer_count
+	config.reward_count = last.reward_count
 	config.spawn_delay = last.spawn_delay
 	config.has_upgrade_window = (wave - 1) % _wave_data.upgrade_interval == 0
-	# Boss every 5 waves after wave 10 (waves 15, 20, 25...)
-	if wave > 10 and wave % 5 == 0:
+	if wave > 20 and wave % 5 == 0:
 		config.boss_count = 1
 	return config
 

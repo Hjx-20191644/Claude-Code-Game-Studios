@@ -10,6 +10,28 @@ const SECTION := "settings"
 const DEFAULT_MASTER_VOLUME := 80
 const DEFAULT_SFX_VOLUME := 100
 const DEFAULT_FULLSCREEN := false
+const DEFAULT_LANG := 0  # Locale.Lang.ZH
+
+
+static func get_lang() -> int:
+	return _load().get_value(SECTION, "lang", DEFAULT_LANG)
+
+
+static func set_lang(value: int) -> void:
+	var cfg := _load()
+	cfg.set_value(SECTION, "lang", value)
+	cfg.save(PATH)
+	Locale.set_lang(value)
+
+
+static func get_lang_label() -> String:
+	match get_lang():
+		Locale.Lang.EN: return "English"
+	return "中文"
+
+
+static func init_lang() -> void:
+	Locale.set_lang(get_lang())
 
 
 static func get_master_volume() -> int:
