@@ -11,6 +11,7 @@ var lifetime_stats: Dictionary = {
 	total_deaths = 0,
 	highest_wave = 0,
 	total_shards_earned = 0,
+	total_victories = 0,
 }
 
 
@@ -60,6 +61,12 @@ func record_run(stats: RunStats, shards_earned: int) -> void:
 		lifetime_stats.highest_wave = stats.wave_reached
 	add_shards(shards_earned)
 	# save again for stats update (add_shards already saves, but this is explicit)
+	_save_profile()
+
+
+## Record a victorious run (final boss slain). Increment victory counter.
+func record_victory() -> void:
+	lifetime_stats.total_victories += 1
 	_save_profile()
 
 

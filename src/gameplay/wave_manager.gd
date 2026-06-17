@@ -4,7 +4,7 @@ class_name WaveManager
 ## Survival wave system: 60s per wave, continuous enemy spawning.
 ## Survive until the timer expires to clear the wave.
 
-enum State { IDLE, WAVE_ACTIVE, WAVE_CLEARED, UPGRADE_WINDOW }
+enum State { IDLE, WAVE_ACTIVE, WAVE_CLEARED, UPGRADE_WINDOW, WON }
 
 @export var wave_data_path: String = "res://assets/data/wave_config.tres"
 @export var wave_duration: float = 60.0
@@ -71,11 +71,23 @@ func upgrade_completed() -> void:
 		_schedule_next_wave()
 
 
+## Resume into endless mode after winning wave 20. Advances to wave 21+
+## using the infinite-loop formula in _get_wave_config().
+func continue_endless() -> void:
+	if _state != State.WON:
+		return
+	_advance_to_next_wave()
+
+
 func get_current_wave() -> int:
 	return _current_wave
 
 
 # --- State transitions ---
+
+func _win_run() -> void:
+	_state = State.WON
+	EventBus.run_won.emit()
 
 func _advance_to_next_wave() -> void:
 	_state = State.IDLE
@@ -178,6 +190,10 @@ func _on_boss_killed(_boss_name: String) -> void:
 	if _state != State.WAVE_ACTIVE:
 		return
 	_boss_killed_this_wave = true
+	# Wave 20 hosts the final boss — slaying it wins the run.
+	if _is_final_wave(_current_wave) and _current_wave >= REQUIRED_WAVE_COUNT:
+		_win_run()
+		return
 	if _wave_timer > 5.0:
 		_wave_timer = 5.0
 
@@ -186,6 +202,11 @@ func _on_boss_killed(_boss_name: String) -> void:
 
 func _should_show_upgrade() -> bool:
 	return _get_wave_config(_current_wave).has_upgrade_window
+
+
+## True when this wave is the last authored wave in the config (the final boss wave).
+func _is_final_wave(wave: int) -> bool:
+	return wave == _wave_data.waves.size()
 
 
 func _get_wave_config(wave: int) -> WaveConfig:
@@ -230,12 +251,21 @@ func _get_random_spawn_pos() -> Vector2:
 	return _spawn_manager._compute_spawn_position(base_angle, 0)
 
 
+const REQUIRED_WAVE_COUNT := 20
+
+
 func _fixup_wave_data() -> void:
 	for i in _wave_data.waves.size():
 		if not _wave_data.waves[i] is WaveConfig:
 			push_warning("WaveManager: .tres sub-resources are untyped, rebuilding defaults")
 			_wave_data.waves = WaveData.create_default().waves
 			return
+	# Fall back to authored 20-wave rhythm if .tres ships a truncated set —
+	# the Brotato-inspired design (DPS gates 11-13, E-class intro 14,
+	# final boss 20) only exists in create_default() when the .tres is short.
+	if _wave_data.waves.size() < REQUIRED_WAVE_COUNT:
+		push_warning("WaveManager: wave_config.tres has %d waves, expected %d — using built-in 20-wave rhythm" % [_wave_data.waves.size(), REQUIRED_WAVE_COUNT])
+		_wave_data.waves = WaveData.create_default().waves
 
 
 func _heal_player_to_full() -> void:

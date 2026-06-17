@@ -14,6 +14,7 @@ signal wave_enemy_count_changed(remaining: int)
 signal wave_spawn_complete(count: int, enemy_type: String)
 signal upgrade_window_requested
 signal run_ended
+signal run_won
 
 # --- Upgrade ---
 signal upgrade_offered(upgrades: Array)

@@ -10,6 +10,7 @@ class_name Main
 @onready var _enemies_container: Node2D = $Arena/Enemies
 @onready var _effects_container: Node2D = $Arena/Effects
 @onready var _player_spawn: Marker2D = $Arena/PlayerSpawn
+@onready var _tutorial_overlay: TutorialOverlay = $UI/TutorialOverlay
 
 
 func _ready() -> void:
@@ -45,6 +46,8 @@ func _start_run() -> void:
 	if shard_mgr:
 		shard_mgr.clear_run_shards()
 	_wave_manager.start_run()
+	if _tutorial_overlay:
+		_tutorial_overlay.show_if_first_run()
 
 
 func _on_run_ended() -> void:

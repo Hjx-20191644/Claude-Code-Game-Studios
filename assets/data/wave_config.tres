@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="WaveData" load_steps=12 format=3 uid="uid://wave_config_001"]
+[gd_resource type="Resource" script_class="WaveData" load_steps=22 format=3 uid="uid://wave_config_001"]
 
 [ext_resource type="Script" path="res://src/core/wave_data.gd" id="1_data"]
 [ext_resource type="Script" path="res://src/core/wave_config.gd" id="2_entry"]
@@ -10,99 +10,297 @@ ranged_count = 0
 charger_count = 0
 exploder_count = 0
 tank_count = 0
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
 spawn_delay = 0.5
 has_upgrade_window = false
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w2"]
 wave_number = 2
 melee_count = 4
-ranged_count = 1
+ranged_count = 0
 charger_count = 0
 exploder_count = 0
 tank_count = 0
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
 spawn_delay = 0.5
 has_upgrade_window = true
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w3"]
 wave_number = 3
-melee_count = 4
-ranged_count = 2
-charger_count = 1
+melee_count = 5
+ranged_count = 0
+charger_count = 0
 exploder_count = 0
 tank_count = 0
-spawn_delay = 0.4
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.45
 has_upgrade_window = false
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w4"]
 wave_number = 4
 melee_count = 4
 ranged_count = 2
-charger_count = 1
-exploder_count = 1
+charger_count = 0
+exploder_count = 0
 tank_count = 0
-spawn_delay = 0.4
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.45
 has_upgrade_window = true
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w5"]
 wave_number = 5
-melee_count = 3
-ranged_count = 2
+melee_count = 5
+ranged_count = 1
 charger_count = 1
 exploder_count = 0
 tank_count = 0
-boss_count = 1
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
 spawn_delay = 0.4
 has_upgrade_window = true
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w6"]
 wave_number = 6
-melee_count = 6
-ranged_count = 3
-charger_count = 1
-exploder_count = 1
-tank_count = 0
-spawn_delay = 0.3
-has_upgrade_window = true
-
-[sub_resource type="Resource" script=ExtResource("2_entry") id="w7"]
-wave_number = 7
 melee_count = 5
 ranged_count = 3
 charger_count = 2
 exploder_count = 0
-tank_count = 1
-spawn_delay = 0.3
+tank_count = 0
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.4
+has_upgrade_window = true
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w7"]
+wave_number = 7
+melee_count = 4
+ranged_count = 2
+charger_count = 0
+exploder_count = 0
+tank_count = 0
+boss_count = 0
+egg_count = 2
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.4
 has_upgrade_window = false
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w8"]
 wave_number = 8
-melee_count = 7
-ranged_count = 5
+melee_count = 3
+ranged_count = 0
 charger_count = 2
-exploder_count = 1
-tank_count = 0
-spawn_delay = 0.3
+exploder_count = 0
+tank_count = 1
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.35
 has_upgrade_window = true
 
 [sub_resource type="Resource" script=ExtResource("2_entry") id="w9"]
 wave_number = 9
+melee_count = 10
+ranged_count = 0
+charger_count = 0
+exploder_count = 0
+tank_count = 0
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.2
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w10"]
+wave_number = 10
+melee_count = 5
+ranged_count = 2
+charger_count = 1
+exploder_count = 0
+tank_count = 1
+boss_count = 1
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.35
+has_upgrade_window = true
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w11"]
+wave_number = 11
+melee_count = 3
+ranged_count = 2
+charger_count = 0
+exploder_count = 0
+tank_count = 0
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.3
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w12"]
+wave_number = 12
+melee_count = 3
+ranged_count = 2
+charger_count = 1
+exploder_count = 0
+tank_count = 0
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.3
+has_upgrade_window = true
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w13"]
+wave_number = 13
+melee_count = 2
+ranged_count = 2
+charger_count = 0
+exploder_count = 0
+tank_count = 0
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 0
+spawn_delay = 0.25
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w14"]
+wave_number = 14
+melee_count = 4
+ranged_count = 0
+charger_count = 0
+exploder_count = 0
+tank_count = 0
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 1
+reward_count = 0
+spawn_delay = 0.4
+has_upgrade_window = true
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w15"]
+wave_number = 15
+melee_count = 5
+ranged_count = 3
+charger_count = 1
+exploder_count = 0
+tank_count = 0
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 1
+reward_count = 0
+spawn_delay = 0.3
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w16"]
+wave_number = 16
+melee_count = 6
+ranged_count = 3
+charger_count = 2
+exploder_count = 0
+tank_count = 1
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 1
+reward_count = 0
+spawn_delay = 0.25
+has_upgrade_window = true
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w17"]
+wave_number = 17
+melee_count = 5
+ranged_count = 4
+charger_count = 2
+exploder_count = 1
+tank_count = 1
+boss_count = 0
+egg_count = 0
+spawner_count = 0
+buffer_count = 1
+reward_count = 0
+spawn_delay = 0.25
+has_upgrade_window = false
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w18"]
+wave_number = 18
 melee_count = 6
 ranged_count = 4
 charger_count = 2
 exploder_count = 0
 tank_count = 1
-spawn_delay = 0.25
+boss_count = 0
+egg_count = 0
+spawner_count = 1
+buffer_count = 0
+reward_count = 1
+spawn_delay = 0.2
+has_upgrade_window = true
+
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w19"]
+wave_number = 19
+melee_count = 5
+ranged_count = 3
+charger_count = 3
+exploder_count = 1
+tank_count = 2
+boss_count = 1
+egg_count = 0
+spawner_count = 0
+buffer_count = 1
+reward_count = 0
+spawn_delay = 0.2
 has_upgrade_window = false
 
-[sub_resource type="Resource" script=ExtResource("2_entry") id="w10"]
-wave_number = 10
+[sub_resource type="Resource" script=ExtResource("2_entry") id="w20"]
+wave_number = 20
 melee_count = 4
-ranged_count = 3
-charger_count = 1
-exploder_count = 1
+ranged_count = 2
+charger_count = 2
+exploder_count = 0
 tank_count = 1
 boss_count = 1
-spawn_delay = 0.25
+egg_count = 0
+spawner_count = 0
+buffer_count = 0
+reward_count = 1
+spawn_delay = 0.2
 has_upgrade_window = true
 
 [resource]
@@ -110,6 +308,6 @@ script = ExtResource("1_data")
 post_wave_delay = 2.0
 upgrade_interval = 2
 upgrade_timeout = 30.0
-infinite_melee_increment = 2
-infinite_ranged_increment = 1
-waves = Array[Resource]([SubResource("w1"), SubResource("w2"), SubResource("w3"), SubResource("w4"), SubResource("w5"), SubResource("w6"), SubResource("w7"), SubResource("w8"), SubResource("w9"), SubResource("w10")])
+infinite_melee_increment = 3
+infinite_ranged_increment = 2
+waves = Array[Resource]([SubResource("w1"), SubResource("w2"), SubResource("w3"), SubResource("w4"), SubResource("w5"), SubResource("w6"), SubResource("w7"), SubResource("w8"), SubResource("w9"), SubResource("w10"), SubResource("w11"), SubResource("w12"), SubResource("w13"), SubResource("w14"), SubResource("w15"), SubResource("w16"), SubResource("w17"), SubResource("w18"), SubResource("w19"), SubResource("w20")])

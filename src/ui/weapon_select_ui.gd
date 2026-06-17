@@ -325,7 +325,7 @@ func _stats_text(w: WeaponData) -> String:
 			extra += " %s" % Locale.t("explosive")
 		if w.bullet_count > 1:
 			extra += " x%d" % w.bullet_count
-		return "%s:%d  %s:%.2fs  %s:%d  %s:%d%s" % [Locale.t("dmg"), w.base_damage, Locale.t("cd"), w.attack_cooldown, Locale.t("ammo"), w.max_ammo, Locale.t("range"), int(w.max_range), extra]
+		return "%s:%d  %s:%.2fs  %s:%d%s" % [Locale.t("dmg"), w.base_damage, Locale.t("cd"), w.attack_cooldown, Locale.t("range"), int(w.max_range), extra]
 
 
 func _file_id(w: WeaponData) -> String:

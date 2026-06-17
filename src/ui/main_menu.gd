@@ -7,6 +7,7 @@ var _leaderboard_ui: LeaderboardUI
 var _settings_ui: SettingsUI
 var _weapon_select_ui: WeaponSelectUI
 var _unlock_tree_panel: UnlockTreePanel
+var _statistics_ui: StatisticsUI
 var _main_panel: VBoxContainer
 var _shard_label: Label
 
@@ -16,7 +17,9 @@ func _ready() -> void:
 	_settings_ui = get_node_or_null("SettingsUI") as SettingsUI
 	_weapon_select_ui = get_node_or_null("WeaponSelectUI") as WeaponSelectUI
 	_unlock_tree_panel = get_node_or_null("UnlockTreePanel") as UnlockTreePanel
+	_statistics_ui = get_node_or_null("StatisticsUI") as StatisticsUI
 	SettingsManager.init_lang()
+	SettingsManager.apply_keybindings()
 	SettingsManager.apply_window_mode()
 	_build_ui()
 
@@ -29,6 +32,8 @@ func _ready() -> void:
 		move_child(_settings_ui, get_child_count() - 1)
 	if _weapon_select_ui:
 		move_child(_weapon_select_ui, get_child_count() - 1)
+	if _statistics_ui:
+		move_child(_statistics_ui, get_child_count() - 1)
 
 	EventBus.shards_changed.connect(_on_shards_changed)
 	EventBus.profile_loaded.connect(_on_shards_changed)
@@ -81,6 +86,9 @@ func _build_ui() -> void:
 	var lb_btn := _make_button(Locale.t("leaderboard"), _on_leaderboard)
 	panel.add_child(lb_btn)
 
+	var stats_btn := _make_button(Locale.t("statistics"), _on_statistics)
+	panel.add_child(stats_btn)
+
 	var settings_btn := _make_button(Locale.t("settings"), _on_settings)
 	panel.add_child(settings_btn)
 
@@ -129,6 +137,13 @@ func _on_leaderboard() -> void:
 		_leaderboard_ui._on_back_callback = func(): _main_panel.show()
 		_main_panel.hide()
 		_leaderboard_ui.show_entries()
+
+
+func _on_statistics() -> void:
+	if _statistics_ui:
+		_statistics_ui._on_back_callback = func(): _main_panel.show()
+		_main_panel.hide()
+		_statistics_ui.show_panel()
 
 
 func _on_settings() -> void:

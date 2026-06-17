@@ -1,8 +1,8 @@
 extends Control
 class_name SettingsUI
 
-## Settings panel: master/SFX volume sliders, fullscreen toggle, back button.
-## Embedded in main menu scene.
+## Settings panel: master/SFX volume sliders, fullscreen toggle, language,
+## keybinding remapping, back button. Embedded in main menu scene.
 
 var _on_back_callback: Callable
 var _master_slider: HSlider
@@ -11,6 +11,8 @@ var _master_label: Label
 var _sfx_label: Label
 var _fullscreen_btn: Button
 var _lang_btn: Button
+var _keybind_buttons: Dictionary = {}  # action -> Button
+var _listening_action: String = ""  # action currently awaiting a key press
 
 
 func _ready() -> void:
@@ -21,7 +23,30 @@ func _ready() -> void:
 
 func show_panel() -> void:
 	_load_settings()
+	_refresh_keybind_labels()
 	show()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if _listening_action.is_empty():
+		return
+	# Accept the next key or mouse-button press as the new binding.
+	# Ignore modifier-only releases and mouse motion.
+	if event is InputEventKey and event.pressed and not event.echo:
+		# Ignore pure modifier presses to avoid binding to them alone.
+		match event.keycode:
+			KEY_CTRL, KEY_SHIFT, KEY_ALT, KEY_META: return
+		_commit_binding(_listening_action, event)
+	elif event is InputEventMouseButton and event.pressed:
+		_commit_binding(_listening_action, event)
+
+
+func _commit_binding(action: String, event: InputEvent) -> void:
+	_listening_action = ""
+	SettingsManager.set_keybinding(action, event)
+	_refresh_keybind_labels()
+	# Consume so it doesn't trigger gameplay.
+	get_viewport().set_input_as_handled()
 
 
 func _build_ui() -> void:
@@ -100,6 +125,45 @@ func _build_ui() -> void:
 	_lang_btn.pressed.connect(_on_lang_toggled)
 	panel.add_child(_lang_btn)
 
+	var spacer_kb := Control.new()
+	spacer_kb.custom_minimum_size = Vector2(0, 12)
+	panel.add_child(spacer_kb)
+
+	# Keybindings section
+	var kb_title := Label.new()
+	kb_title.text = Locale.t("keybinds")
+	kb_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	kb_title.add_theme_font_size_override("font_size", 22)
+	kb_title.add_theme_color_override("font_color", Color(0.7, 0.7, 1.0))
+	panel.add_child(kb_title)
+
+	var kb_grid := GridContainer.new()
+	kb_grid.columns = 3
+	kb_grid.add_theme_constant_override("h_separation", 16)
+	kb_grid.add_theme_constant_override("v_separation", 6)
+	kb_grid.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	for action in SettingsManager.REBINDABLE_ACTIONS:
+		var label := Label.new()
+		label.text = Locale.t("kb_" + action)
+		label.add_theme_font_size_override("font_size", 14)
+		label.custom_minimum_size = Vector2(120, 0)
+		kb_grid.add_child(label)
+
+		var bind_btn := Button.new()
+		bind_btn.add_theme_font_size_override("font_size", 14)
+		bind_btn.custom_minimum_size = Vector2(120, 32)
+		bind_btn.pressed.connect(_on_rebind_pressed.bind(action))
+		kb_grid.add_child(bind_btn)
+		_keybind_buttons[action] = bind_btn
+
+		var reset_btn := Button.new()
+		reset_btn.text = Locale.t("kb_reset")
+		reset_btn.add_theme_font_size_override("font_size", 12)
+		reset_btn.custom_minimum_size = Vector2(70, 32)
+		reset_btn.pressed.connect(_on_reset_pressed.bind(action))
+		kb_grid.add_child(reset_btn)
+	panel.add_child(kb_grid)
+
 	var spacer3 := Control.new()
 	spacer3.custom_minimum_size = Vector2(0, 12)
 	panel.add_child(spacer3)
@@ -141,6 +205,37 @@ func _on_lang_toggled() -> void:
 	var next_lang := Locale.Lang.EN if SettingsManager.get_lang() == Locale.Lang.ZH else Locale.Lang.ZH
 	SettingsManager.set_lang(next_lang)
 	_refresh()
+
+
+func _on_rebind_pressed(action: String) -> void:
+	# If already listening for another action, cancel it first.
+	if not _listening_action.is_empty() and _keybind_buttons.has(_listening_action):
+		var prev_btn: Button = _keybind_buttons[_listening_action]
+		prev_btn.text = _binding_label(_listening_action)
+	_listening_action = action
+	if _keybind_buttons.has(action):
+		(_keybind_buttons[action] as Button).text = Locale.t("kb_listening")
+
+
+func _on_reset_pressed(action: String) -> void:
+	SettingsManager.reset_keybinding(action)
+	# After reset, InputMap was reloaded; refresh all labels.
+	_refresh_keybind_labels()
+
+
+func _binding_label(action: String) -> String:
+	var ev := SettingsManager.get_bound_event(action)
+	if ev:
+		return SettingsManager.event_label(ev)
+	return "..."
+
+
+func _refresh_keybind_labels() -> void:
+	for action in _keybind_buttons.keys():
+		if action == _listening_action:
+			continue
+		var btn: Button = _keybind_buttons[action]
+		btn.text = _binding_label(action)
 
 
 func _on_back() -> void:

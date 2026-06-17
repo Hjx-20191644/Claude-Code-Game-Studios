@@ -19,7 +19,6 @@ class_name WeaponData
 @export var max_range: float = 0.0
 @export var scatter_degrees: float = 0.0
 @export var bullet_count: int = 1
-@export var max_ammo: int = 0
 @export var pierce_count: int = 0
 @export var explosive_radius: float = 0.0
 
@@ -38,7 +37,6 @@ func validate() -> void:
 		assert(bullet_speed == 0.0, "WeaponData: melee bullet_speed must be 0, got: %f" % bullet_speed)
 		assert(max_range == 0.0, "WeaponData: melee max_range must be 0, got: %f" % max_range)
 		assert(scatter_degrees == 0.0, "WeaponData: melee scatter_degrees must be 0, got: %f" % scatter_degrees)
-		assert(max_ammo == 0, "WeaponData: melee max_ammo must be 0, got: %d" % max_ammo)
 		assert(pierce_count == 0, "WeaponData: melee pierce_count must be 0, got: %d" % pierce_count)
 		assert(explosive_radius == 0.0, "WeaponData: melee explosive_radius must be 0, got: %f" % explosive_radius)
 
@@ -49,7 +47,6 @@ func validate() -> void:
 		assert(max_range >= 150.0 and max_range <= 800.0, "WeaponData: max_range must be 150-800, got: %f" % max_range)
 		assert(scatter_degrees >= 0.0 and scatter_degrees <= 20.0, "WeaponData: scatter_degrees must be 0-20, got: %f" % scatter_degrees)
 		assert(bullet_count >= 1 and bullet_count <= 8, "WeaponData: bullet_count must be 1-8, got: %d" % bullet_count)
-		assert(max_ammo >= 2 and max_ammo <= 30, "WeaponData: max_ammo must be 2-30, got: %d" % max_ammo)
 		assert(pierce_count >= 0 and pierce_count <= 10, "WeaponData: pierce_count must be 0-10, got: %d" % pierce_count)
 		assert(explosive_radius >= 0.0 and explosive_radius <= 120.0, "WeaponData: explosive_radius must be 0-120, got: %f" % explosive_radius)
 

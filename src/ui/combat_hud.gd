@@ -1,7 +1,7 @@
 extends Control
 class_name CombatHUD
 
-## In-game HUD: health bar, ammo, dodge, score, wave, kills, wave announce.
+## In-game HUD: health bar, dodge, score, wave, kills, wave announce.
 ## World-space elements track player; screen-space elements use anchors.
 
 @export var health_bar_width: float = 30.0

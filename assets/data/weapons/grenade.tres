@@ -15,5 +15,4 @@ bullet_speed = 150.0
 max_range = 150.0
 scatter_degrees = 5.0
 bullet_count = 1
-max_ammo = 3
 explosive_radius = 60.0

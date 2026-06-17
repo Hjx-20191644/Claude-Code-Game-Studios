@@ -2,7 +2,7 @@ extends Node
 class_name CombatSystem
 
 ## Mixed combat system: melee fan attacks + ranged projectiles.
-## Manages dual weapon slots, cooldowns, ammo, and attack direction.
+## Manages dual weapon slots, cooldowns, and attack direction.
 
 # Weapon slots
 var left_weapon: WeaponData
@@ -51,7 +51,7 @@ func _physics_process(delta: float) -> void:
 
 	_update_aim_direction()
 	_update_cooldowns(delta)
-	# unlimited ammo
+	# No ammo system — weapons fire on cooldown only.
 	_check_continuous_attack()
 
 
@@ -302,7 +302,7 @@ func _try_ranged_attack() -> void:
 			dmg = int(float(dmg) * _get_ranged_damage_mult())
 			_spawn_bullet(weapon, bullet_dir, dmg)
 
-		# unlimited ammo
+			# No ammo system — weapons fire on cooldown only.
 
 	if is_dual:
 		var speed_mult := 1.0
